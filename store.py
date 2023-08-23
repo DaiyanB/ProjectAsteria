@@ -2,11 +2,11 @@ import pygame
 # import math
 
 # from objects import Planet
-from objects import planets
-from objects import WIDTH, HEIGHT
+# from objects import planets
+# from objects import WIDTH, HEIGHT
 
-# from testing import planets
-# from testing import WIDTH, HEIGHT
+from testing import planets
+from testing import WIDTH, HEIGHT
 
 pygame.init()
  

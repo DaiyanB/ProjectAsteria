@@ -1,3 +1,6 @@
+import numpy as np
+from numpy.linalg import norm
+
 import pygame, math
 
 pygame.font.init()
@@ -16,32 +19,41 @@ class Planet:
     AU = 149.6e6 * 1000
     G = 6.67428e-11
     SCALE = 200/AU # 1 AU = 100 px
-    TIMESTEP = 3600*24 # 1 day
+    TIMESTEP = 3600*24*10 # 1 day
+    SUN_MASS = 1.988892e30
 
-    def __init__(self, x, y, radius, colour, mass):
-        self.x = x
-        self.y = y
+    def __init__(self, coordinates, radius, colour, mass):
+        self.coordinates = np.array(coordinates)
         self.radius = radius
         self.colour = colour
         self.mass = mass 
 
+        self.name = "nein"
+
         self.orbit = []
 
-        self.x_vel = 0
-        self.y_vel = 0        
+        self.velocity = np.array([0,self.orbital_velocity(self.coordinates)])      
 
         self.sun = False
         self.sun_distance = 0
 
+    def orbital_velocity(self, coordinates):
+        if coordinates[0] == 0:
+            return 0
+        
+        velocity = math.sqrt(self.G * self.SUN_MASS / abs(coordinates[0]))*coordinates[0]/abs(coordinates[0])
+        return velocity
+    
     def draw(self, win):
-        x = self.x * self.SCALE + WIDTH / 2
-        y = self.y * self.SCALE + HEIGHT / 2
+        current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
+        # x = self.x * self.SCALE + WIDTH / 2
+        # y = self.y * self.SCALE + HEIGHT / 2
 
         if len(self.orbit) > 2:
             updated_points = []
 
             for pt in self.orbit:
-                x_pt, y_pt = pt
+                x_pt, y_pt = pt[0], pt[1]
 
                 x_pt = x_pt * self.SCALE + WIDTH / 2
                 y_pt = y_pt * self.SCALE + HEIGHT / 2
@@ -52,66 +64,74 @@ class Planet:
 
         if not self.sun:
             distance_text = FONT.render(f"{round(self.sun_distance/1000, 2)} km", 1, WHITE)
-            win.blit(distance_text, (x - distance_text.get_width()/2, y + distance_text.get_height()/2))
+            win.blit(distance_text, (current_pos[0] - distance_text.get_width()/2, current_pos[1] + distance_text.get_height()/2))
 
-        pygame.draw.circle(win, self.colour, (x, y), self.radius)
+        pygame.draw.circle(win, self.colour, (current_pos[0], current_pos[1]), self.radius)
     
     def attraction(self, other):
-        other_x, other_y = other.x, other.y
+        other_coordinates = other.coordinates
 
-        distance_x = other_x - self.x
-        distance_y = other_y - self.y
+        displacement = other_coordinates - self.coordinates 
 
-        distance = math.sqrt(distance_x**2 + distance_y**2)
+        distance = norm(displacement)
+        # distance = math.sqrt(displacement[0]**2 + displacement[1]**2)
+
 
         if other.sun:
             self.sun_distance = distance
 
         force = self.G * self.mass * other.mass / distance**2
 
-        theta = math.atan2(distance_y, distance_x)
+        if self.name == "earth":
+            print(force)
 
-        force_x = math.cos(theta) * force
-        force_y = math.sin(theta) * force
+        theta = math.atan2(displacement[1], displacement[0])
 
-        return force_x, force_y
+        force_vector = np.array([math.cos(theta), math.sin(theta)]) * force
+
+        return force_vector
     
     def update_position(self, planets):
-        total_fx = total_fy = 0
+        resultant_force = np.array([0,0])
 
         for planet in planets:
             if self == planet:
                 continue
         
-            fx, fy = self.attraction(planet)
+            force = self.attraction(planet)
 
-            total_fx += fx
-            total_fy += fy
+            resultant_force = resultant_force + force
         
-        self.x_vel += total_fx / self.mass * self.TIMESTEP
-        self.y_vel += total_fy / self.mass * self.TIMESTEP
+        # self.x_vel += total_fx / self.mass * self.TIMESTEP
+        # self.y_vel += total_fy / self.mass * self.TIMESTEP
 
-        self.x += self.x_vel * self.TIMESTEP
-        self.y += self.y_vel * self.TIMESTEP
+        self.velocity = self.velocity + (resultant_force / self.mass * self.TIMESTEP)
 
-        self.orbit.append((self.x, self.y))
+        # self.x += self.x_vel * self.TIMESTEP
+        # self.y += self.y_vel * self.TIMESTEP
+
+        self.coordinates = self.coordinates + (self.velocity * self.TIMESTEP)
+        # if self.name == "earth":
+        #     print(self.sun_distance)
+        self.orbit.append((self.coordinates))
 
 
 
-sun = Planet(0, 0, 30, YELLOW, 1.988892e30)
+sun = Planet([0, 0], 30, YELLOW, 1.988892e30)
 sun.sun = True
 
-mercury = Planet(0.387*Planet.AU, 0, 8, DARK_GREY, 3.30e23)
-mercury.y_vel = -47.4 * 1000
+mercury = Planet([0.387*Planet.AU, 0], 8, DARK_GREY, 3.30e23)
+# mercury.velocity[1] = -47.4 * 1000
 
-venus = Planet(0.723*Planet.AU, 0, 14, WHITE, 4.8685e24)
-venus.y_vel = -35.02 * 1000
+venus = Planet([0.723*Planet.AU, 0], 14, WHITE, 4.8685e24)
+# venus.velocity[1] = -35.02 * 1000
 
-earth = Planet(-Planet.AU, 0, 16, BLUE, 5.9742e24)
-earth.y_vel = 29.783 * 1000
+earth = Planet([-Planet.AU, 0], 16, BLUE, 5.9742e24)
+# earth.velocity[1] = 29.783 * 1000
+# earth.name = "earth"
 
-mars = Planet(-1.524*Planet.AU, 0, 12, RED, 6.39e23)
-mars.y_vel = 24.077 * 1000
+mars = Planet([-1.524*Planet.AU, 0], 12, RED, 6.39e23)
+# mars.velocity[1] = 24.077 * 1000
 
 planets = [sun, mercury, venus, earth, mars]
 
