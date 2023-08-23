@@ -28,7 +28,7 @@ class Planet:
         self.colour = colour
         self.mass = mass 
 
-        self.name = "nein"
+        self.name = "nein" # debugging purposes
 
         self.orbit = []
 
@@ -48,6 +48,8 @@ class Planet:
         current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
         # x = self.x * self.SCALE + WIDTH / 2
         # y = self.y * self.SCALE + HEIGHT / 2
+        print("cr", current_pos)
+        print("sc", self.coordinates)
 
         if len(self.orbit) > 2:
             updated_points = []
@@ -115,7 +117,82 @@ class Planet:
         #     print(self.sun_distance)
         self.orbit.append((self.coordinates))
 
+class Rocket:
+    AU = 149.6e6 * 1000
+    G = 6.67428e-11
+    SCALE = 200/AU # 1 AU = 100 px
+    TIMESTEP = 3600*24# 1 day
+    SUN_MASS = 1.988892e30
+    def __init__(self, coordinates, velocity, mass, colour): 
+        self.coordinates = np.array(coordinates)
+        self.velocity = np.array([velocity])
+        self.mass = mass
+        self.colour = colour
 
+        self.radius = 2
+        self.sun_distance = 0
+        self.sun = False
+        self.path = []
+
+    def draw(self, win):
+        current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
+        # x = self.x * self.SCALE + WIDTH / 2
+        # y = self.y * self.SCALE + HEIGHT / 2
+
+        if len(self.path) > 2:
+            updated_points = []
+
+            for pt in self.path:
+                x_pt, y_pt = pt[0], pt[1]
+
+                x_pt = x_pt * self.SCALE + WIDTH / 2
+                y_pt = y_pt * self.SCALE + HEIGHT / 2
+
+                updated_points.append((x_pt, y_pt))
+
+            pygame.draw.lines(win, self.colour, False, updated_points, 2)  
+        print("cr R", current_pos)
+        print("sc R", self.coordinates)
+        pygame.draw.circle(win, self.colour, (current_pos[0], current_pos[1]), self.radius)
+
+    def attraction(self, other):
+        other_coordinates = other.coordinates
+
+        displacement = other_coordinates - self.coordinates 
+
+        distance = norm(displacement)
+
+        if other.sun:
+            self.sun_distance = distance
+
+        force = self.G * self.mass * other.mass / distance**2
+
+        # if self.name == "earth":
+        #     print(force)
+
+        theta = math.atan2(displacement[1], displacement[0])
+
+        force_vector = np.array([math.cos(theta), math.sin(theta)]) * force
+
+        return force_vector
+    
+    def update_position(self, planets):
+        resultant_force = np.array([0,0])
+
+        for planet in planets:
+            if self == planet:
+                continue
+        
+            force = self.attraction(planet)
+
+            resultant_force = resultant_force + force
+
+        self.velocity = self.velocity + (resultant_force / self.mass * self.TIMESTEP)
+
+        self.coordinates = self.coordinates + (self.velocity * self.TIMESTEP)
+        # if self.name == "earth":
+        #     print(self.sun_distance)
+        self.path.append((self.coordinates))
 
 sun = Planet([0, 0], 30, YELLOW, 1.988892e30)
 sun.sun = True
@@ -133,5 +210,7 @@ earth = Planet([-Planet.AU, 0], 16, BLUE, 5.9742e24)
 mars = Planet([-1.524*Planet.AU, 0], 12, RED, 6.39e23)
 # mars.velocity[1] = 24.077 * 1000
 
-planets = [sun, mercury, venus, earth, mars]
+rocket = Rocket([-Planet.AU, 0], [0,11208.25589], 1e3, WHITE)
+
+planets = [sun, mercury, venus, earth, mars, rocket]
 
