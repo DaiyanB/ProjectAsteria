@@ -8,13 +8,13 @@ Welcome stakeholders. Please read the following before attempting to run the cod
 
 Make sure to run 
 `pip install -r requirements.txt` 
-to make sure all the neccessary libraries are installed.
+to make sure all the neccessary libraries are installed. It's best to do so from the admin terminal. Ensure you're in the `ProjectAsteria` folder. 
 
 ## How to run
 
 Simply open an IDE/text editor that lets you run code and run `main.py` or type the
-`py main.py` command. Ensure you're in the ProjectAsteria folder.
+`py main.py` command. Ensure you're in the `ProjectAsteria` folder.
 
-## Last notice
+## Last words
 
 Do not stalk this repo.
