@@ -1,4 +1,4 @@
-# ![Alt](ui/appicon.ico "App icon") ProjectAsteria
+# <img src="ui/appicon.ico" alt="Alt" width="22"/> ProjectAsteria
 
 Page for my painful OCR A Level Computer Science NEA.
 
