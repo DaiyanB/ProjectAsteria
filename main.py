@@ -13,8 +13,8 @@ pygame.init()
 
 WIN = pygame.display.set_mode((WIDTH, HEIGHT))
 # WIN = pygame.display.set_mode((0, 0))
-
-pygame.display.set_caption("Mona 1.0")
+pygame.display.set_icon(pygame.image.load('./ui/appicon.ico'))
+pygame.display.set_caption("Mona")
 
 def main():
     run = True
