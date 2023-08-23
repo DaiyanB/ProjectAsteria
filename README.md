@@ -12,9 +12,8 @@ to make sure all the neccessary libraries are installed.
 
 ## How to run
 
-Simply open an IDE/text editor that lets you run code and run `main.py` or type 
-`py main.py`
-Ensure you're in the ProjectAsteria folder.
+Simply open an IDE/text editor that lets you run code and run `main.py` or type the
+`py main.py` command. Ensure you're in the ProjectAsteria folder.
 
 ## Last notice
 
