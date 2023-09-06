@@ -39,7 +39,7 @@ def main():
         keys = pygame.key.get_pressed()
         
         if keys[pygame.K_RIGHT]:
-                planets[-1].rotate_force(0.2)
+            planets[-1].rotate_force(0.2)
         
         if keys[pygame.K_LEFT]:
             planets[-1].rotate_force(-0.2)
