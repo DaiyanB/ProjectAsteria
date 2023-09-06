@@ -21,7 +21,7 @@ BEIGE = (230, 208, 178)
 
 MONA_PURPLE = (136, 0, 231)
 
-TIMESTEP = 86400/10
+TIMESTEP = 86400
 
 FONT_16 = pygame.font.SysFont("Inter", 16)
 FONT_20 = pygame.font.SysFont("Inter", 20)
