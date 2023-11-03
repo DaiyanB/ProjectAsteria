@@ -1,4 +1,1 @@
-        keys = pygame.key.get_pressed()
-        
-        if keys[pygame.K_RIGHT]:
-                planets[-1].rotate_force(0.1)
+if event.key == pygame.K_n:
