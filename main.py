@@ -31,6 +31,7 @@ pygame.display.set_caption("Mona")
 # camera
 camera_group = Camera()
 
+# stars
 for _ in range (2000):
     x = randint(0, 8000)
     y = randint(0, 3000)
