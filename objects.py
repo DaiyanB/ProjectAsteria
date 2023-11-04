@@ -2,6 +2,7 @@ import numpy as np
 from numpy.linalg import norm
 
 import pygame, math
+from pygame import gfxdraw
 from math import sin, cos, atan2, degrees, radians
 from random import randint
 
@@ -648,13 +649,22 @@ class RocketSprite(pygame.sprite.Sprite):
         self.rocket_input()
         self.new_coordinates(planets)
 
+
+circle = pygame.Surface((2, 2), pygame.SRCALPHA)
+# pygame.draw.circle(circle, WHITE, (0, 0), 1)
+gfxdraw.aacircle(circle, 2, 2, 10, WHITE)
+gfxdraw.filled_circle(circle, 2, 2, 10, WHITE)
 class RandomSurface(pygame.sprite.Sprite):
     def __init__(self, coordinates, radius, colour, group):
         super().__init__(group)
 
-        self.image = pygame.Surface((2*radius,2*radius))
-        self.image.fill(WHITE)
+        # self.image = pygame.Surface()
+        self.image = circle
+        self.image = pygame.transform.rotozoom(self.image, 0, radius/10)
         self.rect = self.image.get_rect(center = coordinates)
+
+
+        # self.image.get_rect() = 
 
         self.radius = radius
         self.coordinates = coordinates

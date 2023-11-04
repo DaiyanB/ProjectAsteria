@@ -31,6 +31,13 @@ pygame.display.set_caption("Mona")
 # camera
 camera_group = Camera()
 
+for _ in range (2000):
+    x = randint(0, 8000)
+    y = randint(0, 3000)
+    radius = randint(1, 10)
+
+    RandomSurface((x, y), radius, WHITE, camera_group)
+
 # rocket
 rocket_group = pygame.sprite.GroupSingle()
 rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], [0, 0], 1e3, WHITE, camera_group)
@@ -43,11 +50,7 @@ planet_group.add(PlanetSprite([0.723*Constant.AU, 0], 14, 4.8685e24, 'venus', r'
 planet_group.add(PlanetSprite([-Constant.AU, 0], 16, 5.9742e24, 'earth', 'sprites\sprites\earth_sprite.png', camera_group))
 planet_group.add(PlanetSprite([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', 'sprites\sprites\marsR_sprite.png', camera_group))
 
-for _ in range (2000):
-    x = randint(0, 8000)
-    y = randint(500, 3000)
 
-    RandomSurface((x, y), 3, WHITE, camera_group)
 
 def main():
     boost_counter = 0
