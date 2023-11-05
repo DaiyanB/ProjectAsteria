@@ -329,9 +329,9 @@ class PlanetSprite(pygame.sprite.Sprite):
 
         # updates coordinates accordingly
         self.coordinates = self.coordinates + (self.velocity * TIMESTEP)
-        print(self.coordinates)
+        # print(self.coordinates)
         current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
-        print(current_pos)
+        # print(current_pos)
         self.rect.center = current_pos
 
         # appends coordinates so that orbital path can be created
@@ -531,16 +531,19 @@ class RocketSprite(pygame.sprite.Sprite):
 
         # calculates straight line distance from the centres of each object
         displacement = other_coordinates - self.coordinates 
+        if other.sun: print('displacement', displacement)
         # print("atr", self.coordinates)
 
         distance = norm(displacement)
+        if other.sun: print('distance', distance)
 
-        if other.sun:
-            self.sun_distance = distance
+        # if other.sun:
+        #     self.sun_distance = distance
         
         # calculates force due to gravity from every other object
         # using F = GMm/r^2
         force = Constant.G * self.mass * other.mass / distance**2
+        if other.sun: print('force', force)
 
         # if self.name == "earth":
         #     print(force)
@@ -550,6 +553,7 @@ class RocketSprite(pygame.sprite.Sprite):
 
         # calculates the vector representing the force
         force_vector = np.array([math.cos(theta), math.sin(theta)]) * force
+        if other.sun: print('force_vector', force_vector)
 
         # returns vector
         return force_vector
@@ -634,14 +638,16 @@ class RocketSprite(pygame.sprite.Sprite):
         # adds force due to thrust
         resultant_force = resultant_force + self.thrust
 
+        # print(resultant_force)
+
         # updates velocity using v = u + at
         self.velocity = self.velocity + (resultant_force / self.mass * TIMESTEP)
         
         # updates coordinates accordingly
         self.coordinates = self.coordinates + (self.velocity * TIMESTEP)
-        print(self.coordinates)
+        # print(self.coordinates)
         current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
-        print(current_pos)
+        # print(current_pos)
         self.rect.center = current_pos
         # self.path.append((self.coordinates))   
 

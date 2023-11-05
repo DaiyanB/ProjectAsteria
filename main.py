@@ -39,11 +39,7 @@ for _ in range (2000):
 
     RandomSurface((x, y), radius, WHITE, camera_group)
 
-# rocket
-rocket_group = pygame.sprite.GroupSingle()
-rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], [0, 0], 1e3, WHITE, camera_group)
-rocket_group.add(rocket)
-
+# planets
 planet_group = pygame.sprite.Group()
 planet_group.add(PlanetSprite([0, 0], 24, 1.988892e30, 'sun', 'sprites\sprites\sun_sprite.png', camera_group))
 planet_group.add(PlanetSprite([0.387*Constant.AU, 0], 8, 3.30e23, 'mercury', 'sprites\sprites\mercury_sprite.png', camera_group))
@@ -51,7 +47,10 @@ planet_group.add(PlanetSprite([0.723*Constant.AU, 0], 14, 4.8685e24, 'venus', r'
 planet_group.add(PlanetSprite([-Constant.AU, 0], 16, 5.9742e24, 'earth', 'sprites\sprites\earth_sprite.png', camera_group))
 planet_group.add(PlanetSprite([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', 'sprites\sprites\marsR_sprite.png', camera_group))
 
-
+# rocket
+rocket_group = pygame.sprite.GroupSingle()
+rocket = RocketSprite([Constant.AU*1,0], [0,11208.25589], [0, 0], 1e3, WHITE, camera_group)
+rocket_group.add(rocket)
 
 def main():
     boost_counter = 0
