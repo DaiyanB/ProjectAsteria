@@ -32,12 +32,12 @@ pygame.display.set_caption("Mona")
 camera_group = Camera()
 
 # stars
-for _ in range (2000):
-    x = randint(0, 8000)
-    y = randint(0, 3000)
-    radius = randint(1, 10)
+# for _ in range (2000):
+#     x = randint(0, 8000)
+#     y = randint(0, 3000)
+#     radius = randint(1, 10)
 
-    RandomSurface((x, y), radius, WHITE, camera_group)
+#     RandomSurface((x, y), radius, WHITE, camera_group)
 
 # planets
 planet_group = pygame.sprite.Group()
@@ -49,24 +49,26 @@ planet_group.add(PlanetSprite([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', 'spr
 
 # rocket
 rocket_group = pygame.sprite.GroupSingle()
-rocket = RocketSprite([Constant.AU*1,0], [0,11208.25589], [0, 0], 1e3, WHITE, camera_group)
+rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], [0, 0], 1e3, WHITE, camera_group)
 rocket_group.add(rocket)
 
 def main():
-    boost_counter = 0
-    n_counter = 0
-
     while True:
         WIN.fill((0, 0, 0)) # fills window with black
 
-        fps.render(WIN, WIDTH) # renders window
+        #fps.render(WIN, WIDTH) # renders window
 
-        scale.render(WIN, WIDTH) # scales window
+        # scale.render(WIN, WIDTH) # scales window
 
         # checks if keys are pressed that have actions associated with them
         # and then executes said actions
-        # keys = pygame.key.get_pressed()
-        
+        keys = pygame.key.get_pressed()
+
+        # if keys[pygame.K_n]:
+            # rocket.rocket_index += 1
+            # rocket.rocket_index %= 2    
+            # camera_group.nuclear_input(rocket)
+
         # if keys[pygame.K_RIGHT]:
         #         planets[-1].rotate_force(0.2)
         
@@ -84,26 +86,11 @@ def main():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-                # run = False
 
             if event.type == pygame.KEYDOWN:
-            #     if event.key == pygame.K_RIGHT:
-            #         planets[-1].rotate_force(5)
-    
-            #     if event.key == pygame.K_o:
-            #         if boost_counter % 2 == 0:
-            #             planets[-1].booster(False)
-            #         else:
-            #             planets[-1].booster(True)
-
-            #         boost_counter += 1  
-
-            #     if event.key == pygame.K_n:
-            #         if n_counter % 2 == 0:
-            #             planets[-1].colour = GREEN
-            #         else:
-            #             planets[-1].colour = WHITE
-            #         n_counter += 1
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    exit()
 
                 if event.key == pygame.K_EQUALS:
                     Constant.SCALE *= 1.5
@@ -112,10 +99,25 @@ def main():
                     Constant.SCALE /= 1.5
                 
                 if event.key == pygame.K_r:
-                    Constant.SCALE = 100/Constant.AU
-  
-    # for _ in range(10):
-        # updates planet positions
+                    camera_group.zoom_scale = 1
+                
+                if event.key == pygame.K_o:
+                    rocket.booster()
+
+                if event.key == pygame.K_n:
+                    rocket.rocket_index += 1
+                    rocket.image = rocket.rocket_type[rocket.rocket_index % 2]
+                
+
+            if event.type == pygame.MOUSEWHEEL:
+                camera_group.zoom_scale += event.y * 0.05
+
+                if camera_group.zoom_scale < 0: 
+                    camera_group.zoom_scale = 0
+                elif camera_group.zoom_scale > 3:
+                    camera_group.zoom_scale = 3
+        # for _ in range(2):
+            # updates planet positions
         for planet in planets:
             # if not planet.sun:
             #     planet.update_position(planets)
@@ -123,12 +125,8 @@ def main():
             planet.update_position(planets)
             # planet.draw(WIN)
 
-        # rocket.draw(WIN)
-        # rocket.update(planets)
-        # planet_group.draw(WIN)
-        # planet_group.update(planets)
         camera_group.update(planets)
-        camera_group.camera_draw(rocket)
+        camera_group.camera_draw(rocket, fps, scale)
 
         
         # obj.draw()
