@@ -12,6 +12,11 @@ def magnitude(arr):
     print(sq_sum)
     return math.sqrt(sq_sum)
 
+def generator():
+    while True:
+        yield 1
+        yield 0
+
 class FPS:
     def __init__(self):
         self.clock = pygame.time.Clock() 

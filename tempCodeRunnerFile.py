@@ -1,6 +1,22 @@
-for _ in range (2000):
-#     x = randint(0, 8000)
-#     y = randint(0, 3000)
-#     radius = randint(1, 10)
+val = 0
+arr = []
 
-#     RandomSurface((x, y), radius, WHITE, camera_group)
+def foo(var):
+    if var == 0:
+        var = 1
+    else:
+        var = 0
+
+    # or
+    
+    if var:
+        var = 0
+    else:
+        var = 1
+
+    return var
+
+def bar(var):
+    var += 1
+
+    return var % 2

@@ -7,7 +7,7 @@ from random import randint
 # from objects import Planet
 from objects import planets, Constant, Scale, RocketSprite, PlanetSprite, Camera, RandomSurface
 from objects import WIDTH, HEIGHT
-from utils.utils import FPS
+from utils.utils import FPS, generator
 # from testing import planets
 # from testing import WIDTH, HEIGHT
 
@@ -51,7 +51,7 @@ planet_group.add(PlanetSprite([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', 'spr
 rocket_group = pygame.sprite.GroupSingle()
 rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], [0, 0], 1e3, WHITE, camera_group)
 rocket_group.add(rocket)
-
+nuclear_counter = generator()
 def main():
     while True:
         WIN.fill((0, 0, 0)) # fills window with black
@@ -91,13 +91,7 @@ def main():
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     exit()
-
-                if event.key == pygame.K_EQUALS:
-                    Constant.SCALE *= 1.5
-                
-                if event.key == pygame.K_MINUS:
-                    Constant.SCALE /= 1.5
-                
+                    
                 if event.key == pygame.K_r:
                     camera_group.zoom_scale = 1
                 
@@ -105,8 +99,9 @@ def main():
                     rocket.booster()
 
                 if event.key == pygame.K_n:
-                    rocket.rocket_index += 1
-                    rocket.image = rocket.rocket_type[rocket.rocket_index % 2]
+                    # rocket.rocket_index += 1
+                    # rocket.image = rocket.rocket_type[rocket.rocket_index % 2]
+                    rocket.image = rocket.rocket_type[next(nuclear_counter)]
                 
 
             if event.type == pygame.MOUSEWHEEL:
