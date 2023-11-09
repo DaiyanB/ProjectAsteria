@@ -575,6 +575,8 @@ class RocketSprite(pygame.sprite.Sprite):
         self.thrust = self.thrust*f_factor
 
     def booster(self):
+        # if args:
+        #     print(args)
         # turns booster on and off ie removes or adds back thrust
         self.boost_counter += 1
         if self.boost_counter % 2:
@@ -587,6 +589,7 @@ class RocketSprite(pygame.sprite.Sprite):
         
         if keys[pygame.K_RIGHT]:
             self.rotate_force(0.2)
+            # self.image = pygame.transform.rotate()
         
         if keys[pygame.K_LEFT]:
             self.rotate_force(-0.2)
@@ -602,9 +605,9 @@ class RocketSprite(pygame.sprite.Sprite):
    
                 if event.key == pygame.K_o:
                     if self.boost_counter % 2 == 0:
-                        self.booster(False)
+                        self.booster()
                     else:
-                        self.booster(True)
+                        self.booster()
 
                     self.boost_counter += 1  
 
