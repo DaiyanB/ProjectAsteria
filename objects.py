@@ -6,6 +6,7 @@ from pygame import gfxdraw
 from math import sin, cos, atan2, degrees, radians
 from random import randint
 
+from utils.utils import generator
 
 # from pygame.sprite import _Group
 
@@ -213,7 +214,9 @@ class Planet:
 class PlanetSprite(pygame.sprite.Sprite):
     def __init__(self, coordinates, ref_radius, mass, name, path, group):
         super().__init__(group)
-        current_pos = np.array(coordinates) * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2]) # position vector
+
+        # position vector
+        current_pos = np.array(coordinates) * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2]) 
 
         self.image = pygame.image.load(f'{path}').convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, ref_radius*2/1024)
@@ -254,31 +257,31 @@ class PlanetSprite(pygame.sprite.Sprite):
 
         return velocity
     
-    def drawn(self, win):
-        current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2]) # position vector
+    # def drawn(self, win):
+    #     current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2]) # position vector
 
-        if len(self.orbit) > 2:
-            #
-            # draws orbital trail
-            #
-            updated_points = []
+    #     if len(self.orbit) > 2:
+    #         #
+    #         # draws orbital trail
+    #         #
+    #         updated_points = []
 
-            for pt in self.orbit:
-                x_pt, y_pt = pt[0], pt[1]
+    #         for pt in self.orbit:
+    #             x_pt, y_pt = pt[0], pt[1]
 
-                x_pt = x_pt * self.SCALE + WIDTH / 2
-                y_pt = y_pt * self.SCALE + HEIGHT / 2
+    #             x_pt = x_pt * self.SCALE + WIDTH / 2
+    #             y_pt = y_pt * self.SCALE + HEIGHT / 2
 
-                updated_points.append((x_pt, y_pt))
+    #             updated_points.append((x_pt, y_pt))
 
-            pygame.draw.lines(win, self.colour, False, updated_points, 2)
+    #         pygame.draw.lines(win, self.colour, False, updated_points, 2)
 
-        pygame.draw.circle(win, self.colour, (current_pos[0], current_pos[1]), self.radius)
+    #     pygame.draw.circle(win, self.colour, (current_pos[0], current_pos[1]), self.radius)
 
-        if not self.sun:
-            # renders "distance from" text
-            distance_text = FONT_16.render(f"{round(self.sun_distance/1000, 2)} km", 1, WHITE)
-            win.blit(distance_text, (current_pos[0] - distance_text.get_width()/2, current_pos[1] + distance_text.get_height()/2))
+    #     if not self.sun:
+    #         # renders "distance from" text
+    #         distance_text = FONT_16.render(f"{round(self.sun_distance/1000, 2)} km", 1, WHITE)
+    #         win.blit(distance_text, (current_pos[0] - distance_text.get_width()/2, current_pos[1] + distance_text.get_height()/2))
 
         
     
@@ -325,9 +328,9 @@ class PlanetSprite(pygame.sprite.Sprite):
 
         # updates coordinates accordingly
         self.coordinates = self.coordinates + (self.velocity * TIMESTEP)
-        # print(self.coordinates)
+
         current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
-        # print(current_pos)
+
         self.rect.center = current_pos
 
         # appends coordinates so that orbital path can be created
@@ -483,7 +486,9 @@ class Rocket():
 class RocketSprite(pygame.sprite.Sprite):
     def __init__(self, coordinates, velocity, thrust, mass, colour, group):
         super().__init__(group)
-        current_pos = np.array(coordinates) * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2]) # position vector
+
+        # position vector
+        current_pos = np.array(coordinates) * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2]) 
 
         self.coordinates = np.array(coordinates)
         self.velocity = np.array(velocity)
@@ -491,14 +496,12 @@ class RocketSprite(pygame.sprite.Sprite):
         self.mass = mass
         self.colour = colour
 
+        # normal and nuclear version of rocket
         normal = pygame.image.load(r'sprites\sprites\rocket_sprite.png').convert_alpha()
-        # normal = pygame.Surface((10,10))
-        # normal.fill('red')
         normal = pygame.transform.rotozoom(normal, 0, 0.01)
-        nuclear = pygame.image.load(r'sprites\sprites\rocket_nuclear_sprite.png')
+        nuclear = pygame.image.load(r'sprites\sprites\rocket_nuclear_sprite.png').convert_alpha()
         nuclear = pygame.transform.rotozoom(nuclear, 0, 0.01)
         self.rocket_type = [normal, nuclear]
-        self.rocket_index = 0
 
         self.image = normal
         self.rect = self.image.get_rect(center = (current_pos[0], current_pos[1]))
@@ -507,9 +510,6 @@ class RocketSprite(pygame.sprite.Sprite):
 
         self.sun_distance = 0
         self.sun = False
-
-        self.boost_counter = 0
-        self.n_counter = 0
 
         self.name = 'rocket'
 
@@ -574,13 +574,12 @@ class RocketSprite(pygame.sprite.Sprite):
         f_factor = (magnitude+factor)/magnitude
         self.thrust = self.thrust*f_factor
 
-    def booster(self):
+    def booster(self, boost_counter):
         # if args:
         #     print(args)
         # turns booster on and off ie removes or adds back thrust
-        self.boost_counter += 1
-        if self.boost_counter % 2:
-            self.thrust = np.array([0, -1])
+        if boost_counter:
+            self.thrust = np.array([0, 1])
         else:
             self.thrust = np.array([0, 0])
 
@@ -600,16 +599,16 @@ class RocketSprite(pygame.sprite.Sprite):
         if keys[pygame.K_DOWN]:
             self.boost_break(-1.5)
 
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
+        # for event in pygame.event.get():
+        #     if event.type == pygame.KEYDOWN:
    
-                if event.key == pygame.K_o:
-                    if self.boost_counter % 2 == 0:
-                        self.booster()
-                    else:
-                        self.booster()
+        #         if event.key == pygame.K_o:
+        #             if self.boost_counter % 2 == 0:
+        #                 self.booster()
+        #             else:
+        #                 self.booster()
 
-                    self.boost_counter += 1  
+        #             self.boost_counter += 1  
 
                 # if event.key == pygame.K_n:
                 #     # if self.n_counter % 2 == 0:
@@ -724,6 +723,7 @@ class RandomSurface(pygame.sprite.Sprite):
 class Camera(pygame.sprite.Group):
     def __init__(self):
         super().__init__()
+
         self.display_surface = pygame.display.get_surface()
     
         # camera offset
@@ -747,6 +747,8 @@ class Camera(pygame.sprite.Group):
         self.internal_offset.y = self.internal_surface_size[1] // 2 - self.half_h
 
     def box_target(self, target):
+        # moves rectangle depending on the position of the the camera
+        # which is dependent on the position of the rocket
         if target.rect.left < self.camera_rect.left:
             self.camera_rect.left = target.rect.left
         if target.rect.right > self.camera_rect.right:
@@ -756,6 +758,7 @@ class Camera(pygame.sprite.Group):
         if target.rect.bottom > self.camera_rect.bottom:
             self.camera_rect.bottom = target.rect.bottom
 
+        # adds the
         self.offset.x = self.camera_rect.left - self.camera_borders["left"]
         self.offset.y = self.camera_rect.top - self.camera_borders["top"]
 
@@ -767,28 +770,26 @@ class Camera(pygame.sprite.Group):
         if keys[pygame.K_MINUS]:
             self.zoom_scale -= 0.1
 
-    # def nuclear_input(self, rocket):
-    #     for sprite in self.sprites():
-    #         if sprite.name == rocket.name:
-    #             sprite.rocket_index = (sprite.rocket_index + 1) % 2
-    #             sprite.rocket_type 
-
     def camera_draw(self, player, fps, scale):
         self.box_target(player)
 
         self.internal_surface.fill('black')
 
+        # adds offset to sprites
         for sprite in self.sprites():
             offset_pos = sprite.rect.topleft - self.offset + self.internal_offset
             self.internal_surface.blit(sprite.image, offset_pos)
 
+        # scales sprites depending on the zoom
         scaled_surface = pygame.transform.scale(self.internal_surface, self.internal_surface_size_vector * self.zoom_scale)
         scaled_rect = scaled_surface.get_rect(center = (self.half_w, self.half_h))
         self.display_surface.blit(scaled_surface, scaled_rect)
 
+        # renders the fps and scale texts
         fps.render(self.display_surface, WIDTH)
         scale.render(self.display_surface, WIDTH, self.zoom_scale)
 
+        # renders the rocket info text
         player.render(self.display_surface)
 
         # pygame.draw.rect(self.display_surface, "yellow", self.camera_rect, 5)
@@ -808,16 +809,6 @@ earth = Planet([-Constant.AU, 0], 16, BLUE, 5.9742e24, 'earth')
 
 mars = Planet([-1.524*Constant.AU, 0], 12, RED, 6.39e23, 'mars')
 
-# pl = Planet([3*Constant.AU, 0], 23, MONA_PURPLE, 2.71828e29)
-# rocket2 = Rocket([Constant.AU*2, earth.radius*Constant.SCALE*2], [0,11208.25589], 1e29, WHITE)
-
-# rocket = pygame.sprite.GroupSingle()
-# rocket.add(Rocket())
-
 rocket = Rocket([-2*Constant.AU+2, earth.radius*Constant.SCALE*2], [0,11208.25589], [0, 0], 1e3, WHITE)
 planets = [sun, mercury, venus, earth, mars]
-#obj = Camera()
-# planets = [sun, mercury, venus, rocket]
-
-# planets = [sun, rocket, rocket2]
 

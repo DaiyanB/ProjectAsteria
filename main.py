@@ -51,64 +51,50 @@ planet_group.add(PlanetSprite([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', 'spr
 rocket_group = pygame.sprite.GroupSingle()
 rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], [0, 0], 1e3, WHITE, camera_group)
 rocket_group.add(rocket)
+boost_counter = generator()
 nuclear_counter = generator()
+
 def main():
     while True:
-        WIN.fill((0, 0, 0)) # fills window with black
-
-        #fps.render(WIN, WIDTH) # renders window
-
-        # scale.render(WIN, WIDTH) # scales window
-
-        # checks if keys are pressed that have actions associated with them
-        # and then executes said actions
-        keys = pygame.key.get_pressed()
-
-        # if keys[pygame.K_n]:
-            # rocket.rocket_index += 1
-            # rocket.rocket_index %= 2    
-            # camera_group.nuclear_input(rocket)
-
-        # if keys[pygame.K_RIGHT]:
-        #         planets[-1].rotate_force(0.2)
-        
-        # if keys[pygame.K_LEFT]:
-        #     planets[-1].rotate_force(-0.2)
-
-        # if keys[pygame.K_UP]:
-        #     planets[-1].boost_break(1.5)
-
-        # if keys[pygame.K_DOWN]:
-        #     planets[-1].boost_break(-1.5)
+        # fills window with black
+        WIN.fill((0, 0, 0)) 
 
         for event in pygame.event.get():
             # checks if window is closed
+            # ends program if it is
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
 
+            # checks if keys are pressed that have actions associated with them
+            # and then executes said actions
             if event.type == pygame.KEYDOWN:
+                # exit via escape key
                 if event.key == pygame.K_ESCAPE:
                     pygame.quit()
                     exit()
                     
+                # resets zoom
                 if event.key == pygame.K_r:
                     camera_group.zoom_scale = 1
                 
+                # turns booster on and off
                 if event.key == pygame.K_o:
-                    rocket.booster()
+                    rocket.booster(next(boost_counter))
 
+                # switches between the regular and nuclear rocket
                 if event.key == pygame.K_n:
-                    # rocket.rocket_index += 1
-                    # rocket.image = rocket.rocket_type[rocket.rocket_index % 2]
                     rocket.image = rocket.rocket_type[next(nuclear_counter)]
                 
-
+            # checks if the mousewheel has been used
             if event.type == pygame.MOUSEWHEEL:
+                # increases zoom based on if the mouse wheel had been
+                # moved up or down
                 camera_group.zoom_scale += event.y * 0.05
 
-                if camera_group.zoom_scale < 0: 
-                    camera_group.zoom_scale = 0
+                # sets bounds between 5 px per AU to 300 px per AU
+                if camera_group.zoom_scale < 0.05: 
+                    camera_group.zoom_scale = 0.05
                 elif camera_group.zoom_scale > 3:
                     camera_group.zoom_scale = 3
         # for _ in range(2):
@@ -116,15 +102,14 @@ def main():
         for planet in planets:
             # if not planet.sun:
             #     planet.update_position(planets)
-
+            
+            # updates position of planets
             planet.update_position(planets)
             # planet.draw(WIN)
 
+        # updates position of sprite planets and draws them
         camera_group.update(planets)
         camera_group.camera_draw(rocket, fps, scale)
-
-        
-        # obj.draw()
 
         pygame.display.update()
         

@@ -1,6 +1,10 @@
-def foo(var, *args):
-    print(var)
-    if args:
-        print('args', args)
+from utils.utils import generator
 
-foo(5, 1)
+one = generator()
+two = generator()
+
+for i in range(10):
+    if not i % 2:
+        print('one', next(one))
+    else:
+        print('two', next(two))
