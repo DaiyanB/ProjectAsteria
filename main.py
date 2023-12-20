@@ -80,19 +80,20 @@ back_button = Button('Back', font, 200, 40, (660, 820), 6)
 
 # control text
 control_surf = [font16.render(i, True, 'white') for i in control_list]
-control_rect = [control_surf[j].get_rect(topleft = (40, 140 + (16+5)*j)) for j in range(len(control_list))]
+control_rect = [control_surf[j].get_rect(topleft = (40, 140 + (1.6)*j)) for j in range(len(control_list))]
 
 # def main():
 while True:
     print(controls_button.action)
     # fills window with black
-    screen.fill('#1a1a1a') 
 
     if game_state == 0:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
+        
+        screen.fill('#1a1a1a') 
 
         # draws buttons
         play.draw(screen)
@@ -117,6 +118,7 @@ while True:
             exit()
             
     elif game_state == 1:
+        screen.fill('black')
         for event in pygame.event.get():
             # checks if window is closed
             # ends program if it is
@@ -165,6 +167,7 @@ while True:
         camera_group.camera_draw(rocket, fps, scale)
     
     elif game_state == 2:
+        screen.fill('#1a1a1a') 
         for event in pygame.event.get():
             # checks if window is closed
             # ends program if it is

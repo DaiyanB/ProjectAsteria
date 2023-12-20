@@ -13,4 +13,5 @@ N - turns rocket into the marvel of engineering: the one and only nuclear rocket
 
 MOUSEWHEEL/SCROLL GESTURES (trackpad) - zoom in/out
 R - resets zoom'''
+
 control_list = control_text.split('\n')[1:]
