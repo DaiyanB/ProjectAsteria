@@ -7,20 +7,23 @@ from random import randint
 # from objects import Planet
 from objects import planets, Constant, Scale, RocketSprite, PlanetSprite, Camera, RandomSurface
 from objects import WIDTH, HEIGHT
+from button import Button
 from utils.utils import FPS, generator
+from utils.variables import control_list
 # from testing import planets
 # from testing import WIDTH, HEIGHT
 
 pygame.init()
  
 
-WIN = pygame.display.set_mode((WIDTH, HEIGHT)) # window dimensions
+screen = pygame.display.set_mode((WIDTH, HEIGHT)) # window dimensions
 
 # colours
 WHITE = (255, 255, 255)
 GREEN = (47, 237, 40)
 # WIN = pygame.display.set_mode((0, 0))
 
+# fps and scale classes
 fps = FPS()
 scale = Scale()
 
@@ -49,16 +52,71 @@ planet_group.add(PlanetSprite([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', 'spr
 
 # rocket
 rocket_group = pygame.sprite.GroupSingle()
-rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], [0, 0], 1e3, WHITE, camera_group)
+rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], 100, 1e5, WHITE, camera_group)
 rocket_group.add(rocket)
 boost_counter = generator()
 nuclear_counter = generator()
 
-def main():
-    while True:
-        # fills window with black
-        WIN.fill((0, 0, 0)) 
+screen = pygame.display.set_mode((HEIGHT, WIDTH))
 
+# game variables
+game_state = 0 # defines possible game states between 0, 1, and 2
+
+font = pygame.font.SysFont('Inter', 30, True)
+font40 = pygame.font.SysFont('Inter', 40, True)
+font16 = pygame.font.SysFont('Inter', 16, False)
+text_col = (255, 255, 255)
+
+# logo
+logo = pygame.image.load('./logo/horizontal_logo.png').convert_alpha()
+logo = pygame.transform.rotozoom(logo, 0, 0.5)
+logo_rect = logo.get_rect(center = (450, 250))
+
+# buttons
+play = Button('Play', font, 200, 40, (350, 350), 6)
+controls_button = Button('Controls', font, 200, 40, (350, 450), 6)
+exit_button = Button('Exit', font, 200, 40, (350, 550), 6)
+back_button = Button('Back', font, 200, 40, (660, 820), 6)
+
+# control text
+control_surf = [font16.render(i, True, 'white') for i in control_list]
+control_rect = [control_surf[j].get_rect(topleft = (40, 140 + (16+5)*j)) for j in range(len(control_list))]
+
+# def main():
+while True:
+    print(controls_button.action)
+    # fills window with black
+    screen.fill('#1a1a1a') 
+
+    if game_state == 0:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+
+        # draws buttons
+        play.draw(screen)
+        controls_button.draw(screen)
+        exit_button.draw(screen)
+
+        # draws logo
+        screen.blit(logo, logo_rect)
+
+        # checks if a button been pressed and 
+        # executes the associated action
+        if play.action == True:
+            game_state = 1
+            print(game_state)
+
+        if controls_button.action == True:
+            game_state = 2
+            controls_button.action = False
+
+        if exit_button.action == True:
+            pygame.quit()
+            exit()
+            
+    elif game_state == 1:
         for event in pygame.event.get():
             # checks if window is closed
             # ends program if it is
@@ -97,24 +155,48 @@ def main():
                     camera_group.zoom_scale = 0.05
                 elif camera_group.zoom_scale > 3:
                     camera_group.zoom_scale = 3
-        # for _ in range(2):
-            # updates planet positions
-        for planet in planets:
-            # if not planet.sun:
-            #     planet.update_position(planets)
-            
-            # updates position of planets
+        
+        # updates position of planets
+        for planet in planets:            
             planet.update_position(planets)
-            # planet.draw(WIN)
 
         # updates position of sprite planets and draws them
         camera_group.update(planets)
         camera_group.camera_draw(rocket, fps, scale)
+    
+    elif game_state == 2:
+        for event in pygame.event.get():
+            # checks if window is closed
+            # ends program if it is
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                exit()
 
-        pygame.display.update()
+        control_title_surf = font.render('Controls', True, 'white')
+        control_title_rect = control_title_surf.get_rect(topleft = (40, 40))
+        # control_text_surf = font.render(control_text, True, 'white')
+        # control_text_rect = control_text_surf.get_rect(topleft = (30, 130))
+
+        screen.blit(control_title_surf, control_title_rect)
+
+        for idx, surf in enumerate(control_surf):
+            rect = control_rect[idx]
+            screen.blit(surf, rect)
+
+        back_button.draw(screen)
+
+        if back_button.action == True:
+            game_state = 0
+            back_button.action = False
         
-        # sets max framerate at 60 FPS
-        fps.clock.tick(60)
+
+        # screen.blit(control_text_surf, control_text_rect)
+        
+
+    pygame.display.update()
+    
+    # sets max framerate at 60 FPS
+    fps.clock.tick(60)
 
 
-main()
+# main()

@@ -3,10 +3,10 @@ from numpy.linalg import norm
 
 import pygame, math
 from pygame import gfxdraw
-from math import sin, cos, atan2, degrees, radians
+from math import sin, cos, atan2, degrees, radians, pi
 from random import randint
 
-from utils.utils import generator
+from utils.utils import Timestep, get_average_color
 
 # from pygame.sprite import _Group
 
@@ -33,8 +33,8 @@ MONA_PURPLE = (136, 0, 231)
 #
 # timestep (duh)
 #
-TIMESTEP = 86400/1
-
+ORIGINAL_TIMESTEP = 86400/2
+timestep = Timestep(ORIGINAL_TIMESTEP)
 #
 # fonts
 #
@@ -69,7 +69,6 @@ class Scale:
         self.text = self.font.render(f"{int(round(self.SCALE*Constant.AU*zoom_scale, 0))} px per AU", True, (255, 255, 255))
         # win.blit(self.text, (width-20-self.text.get_width(), 40))
         win.blit(self.text, pos)
-
 
 class Planet:
     def __init__(self, coordinates, ref_radius, colour, mass, name):
@@ -199,12 +198,12 @@ class Planet:
         #
         # updates velocity using v = u + at
         #
-        self.velocity = self.velocity + (resultant_force / self.mass * TIMESTEP)
+        self.velocity = self.velocity + (resultant_force / self.mass * timestep.get_timestep())
 
         #
         # updates coordinates accordingly
         #
-        self.coordinates = self.coordinates + (self.velocity * TIMESTEP)
+        self.coordinates = self.coordinates + (self.velocity * timestep.get_timestep())
 
         #
         # appends coordinates so that orbital path can be created
@@ -221,6 +220,8 @@ class PlanetSprite(pygame.sprite.Sprite):
         self.image = pygame.image.load(f'{path}').convert_alpha()
         self.image = pygame.transform.rotozoom(self.image, 0, ref_radius*2/1024)
         self.rect = self.image.get_rect(center = (current_pos[0], current_pos[1]))
+
+        self.average_colour = get_average_color(self.image)
 
         self.coordinates = np.array(coordinates)
         self.ref_radius = ref_radius
@@ -324,10 +325,10 @@ class PlanetSprite(pygame.sprite.Sprite):
             resultant_force = resultant_force + force
 
         # updates velocity using v = u + at
-        self.velocity = self.velocity + (resultant_force / self.mass * TIMESTEP)
+        self.velocity = self.velocity + (resultant_force / self.mass * timestep.get_timestep())
 
         # updates coordinates accordingly
-        self.coordinates = self.coordinates + (self.velocity * TIMESTEP)
+        self.coordinates = self.coordinates + (self.velocity * timestep.get_timestep())
 
         current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
 
@@ -475,10 +476,10 @@ class Rocket():
         resultant_force = resultant_force + self.thrust
 
         # updates velocity using v = u + at
-        self.velocity = self.velocity + (resultant_force / self.mass * TIMESTEP)
+        self.velocity = self.velocity + (resultant_force / self.mass * timestep.get_timestep())
         
         # updates coordinates accordingly
-        self.coordinates = self.coordinates + (self.velocity * TIMESTEP)
+        self.coordinates = self.coordinates + (self.velocity * timestep.get_timestep())
         # if self.name == "earth":
         #     print(self.sun_distance)
         self.path.append((self.coordinates))
@@ -488,12 +489,21 @@ class RocketSprite(pygame.sprite.Sprite):
         super().__init__(group)
 
         # position vector
-        current_pos = np.array(coordinates) * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2]) 
+        current_pos = np.array(coordinates) * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
+
+        direction_vector = np.array([0,-1]) 
 
         self.coordinates = np.array(coordinates)
+
         self.velocity = np.array(velocity)
-        self.thrust = np.array(thrust)
+        self.thrust = np.array([0,0])
+        self.thrust_record = np.array(thrust*direction_vector)
+        self.deceleration = 100
+
+        self.angular_displacement = 0
+
         self.mass = mass
+
         self.colour = colour
 
         # normal and nuclear version of rocket
@@ -503,9 +513,11 @@ class RocketSprite(pygame.sprite.Sprite):
         nuclear = pygame.transform.rotozoom(nuclear, 0, 0.01)
         self.rocket_type = [normal, nuclear]
 
+        self.booster_counter = 0
+
         self.image = normal
         self.rect = self.image.get_rect(center = (current_pos[0], current_pos[1]))
-        self.ref_radius = 2*Constant.SCALE/100*Constant.AU
+        # self.ref_radius = 2*Constant.SCALE/100*Constant.AU
         self.path = []
 
         self.sun_distance = 0
@@ -518,10 +530,6 @@ class RocketSprite(pygame.sprite.Sprite):
     @property
     def SCALE(self):
         return Constant.SCALE
-    
-    @property
-    def radius(self):
-        return self.ref_radius*(Constant.SCALE*Constant.AU/100)
 
     def attraction(self, other):
         # coordinates of other object
@@ -556,48 +564,108 @@ class RocketSprite(pygame.sprite.Sprite):
         # returns vector
         return force_vector
 
-    def rotate_force(self, theta):
+    def rotate_force(self, theta_deg):
+        # adjusts the angular displacement from the direction vector
+        self.angular_displacement = (theta_deg + self.angular_displacement) % 360
+
+        # if self.angular_displacement >= 360:
+        #     self.angular_displacement -= 360
+        # elif self.angular_displacement <= -360:
+        #     self.angular_displacement += 360
+
         # converts degrees to radians
-        theta = radians(theta)
+        theta = radians(theta_deg)
         
         # sets up rotation matrix
-        rotation_matrix = np.array([[cos(theta), -sin(theta)], 
-                                    [sin(theta), cos(theta)]])
+        rotation_matrix = np.array([[cos(-theta), -sin(-theta)], 
+                                    [sin(-theta), cos(-theta)]])
         
         # direction of force rotated via a matrix transformation
         # rotation matrix multiplied by force vector
         self.thrust = np.matmul(rotation_matrix, self.thrust)
+        self.thrust_record = np.matmul(rotation_matrix, self.thrust_record)
 
-    def boost_break(self, factor):
-        # changes the magnitude of the force by some factor
+        # rotates sprite according to the angular displacement
+        self.image = pygame.transform.rotate(self.rocket_type[0], self.angular_displacement)
+
+    def change_thrust(self, thrust_constant):
         magnitude = norm(self.thrust)
-        f_factor = (magnitude+factor)/magnitude
-        self.thrust = self.thrust*f_factor
+        # normalised_factor = (magnitude+thrust_constant)/magnitude
+        # self.thrust = self.thrust*normalised_factor
+
+        # new magnitude of thrust
+        delta_thrust = magnitude+thrust_constant
+
+        if magnitude != 0:
+            if delta_thrust <= 0:
+                print('dt_1',delta_thrust)
+                self.thrust_record = self.thrust
+                self.thrust = self.thrust*0
+            else:
+                print('dt_2', delta_thrust)
+                normalised_factor = delta_thrust/magnitude
+                self.thrust = self.thrust*normalised_factor
+
+        elif magnitude == 0 and thrust_constant > 0:
+            # rotation_matrix = np.array([[cos(pi), -sin(pi)], 
+            #                             [sin(pi), cos(pi)]])
+            
+            normalised_factor = delta_thrust/norm(self.thrust_record)
+            self.thrust = self.thrust_record*normalised_factor            
+
+    def breaking(self):
+        # decreases the magnitude of the velocity by some factor equal to
+        # the deceleration
+        magnitude = norm(self.velocity)
+        if magnitude != 0:
+            breaking_factor = (magnitude-self.deceleration)/magnitude
+            self.velocity = self.velocity*breaking_factor
+        else:
+            self.velocity = self.velocity*0
 
     def booster(self, boost_counter):
         # if args:
         #     print(args)
         # turns booster on and off ie removes or adds back thrust
         if boost_counter:
-            self.thrust = np.array([0, 1])
+            print(self.thrust, self.thrust_record)
+            self.thrust = self.thrust_record
         else:
+            self.thrust_record = self.thrust
             self.thrust = np.array([0, 0])
+            print('After',self.thrust, self.thrust_record)
+
+        self.booster_counter = boost_counter
 
     def rocket_input(self):
         keys = pygame.key.get_pressed()
         
         if keys[pygame.K_RIGHT]:
-            self.rotate_force(0.2)
-            # self.image = pygame.transform.rotate()
+            self.rotate_force(-1)
         
         if keys[pygame.K_LEFT]:
-            self.rotate_force(-0.2)
+            self.rotate_force(1)
 
-        if keys[pygame.K_UP]:
-            self.boost_break(1.5)
+        if self.booster_counter:
+            if keys[pygame.K_UP]:
+                self.change_thrust(10)
 
-        if keys[pygame.K_DOWN]:
-            self.boost_break(-1.5)
+            if keys[pygame.K_DOWN]:
+                self.change_thrust(-10)
+        
+        if keys[pygame.K_SPACE]:
+            self.breaking()
+
+        if keys[pygame.K_z]:
+            self.velocity = self.velocity*0
+
+        if keys[pygame.K_EQUALS]:
+            new_timestep =  timestep.get_timestep() + ORIGINAL_TIMESTEP*0.05
+            timestep.update_timestep(new_timestep)
+        
+        if keys[pygame.K_MINUS]:
+            new_timestep = timestep.get_timestep() - ORIGINAL_TIMESTEP*0.05
+            timestep.update_timestep(new_timestep)
 
         # for event in pygame.event.get():
         #     if event.type == pygame.KEYDOWN:
@@ -622,8 +690,6 @@ class RocketSprite(pygame.sprite.Sprite):
 
                 #     self.n_counter += 1
   
-
-
     def new_coordinates(self, planets):
         # sets resultant force to 0
         resultant_force = np.array([0,0])
@@ -643,15 +709,16 @@ class RocketSprite(pygame.sprite.Sprite):
         # print(resultant_force)
 
         # updates velocity using v = u + at
-        self.velocity = self.velocity + (resultant_force / self.mass * TIMESTEP)
+        self.velocity = self.velocity + (resultant_force / self.mass * timestep.get_timestep())
         
         # updates coordinates accordingly
-        self.coordinates = self.coordinates + (self.velocity * TIMESTEP)
+        self.coordinates = self.coordinates + (self.velocity * timestep.get_timestep())
         # print(self.coordinates)
         current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
         # print(current_pos)
         self.rect.center = current_pos
-        # self.path.append((self.coordinates))   
+        
+        self.path.append((self.coordinates))   
 
     def render(self, win):
         # gets current position from (0,0), i think
@@ -671,10 +738,10 @@ class RocketSprite(pygame.sprite.Sprite):
         #     pygame.draw.lines(win, self.colour, False, updated_points, 2)  
 
 
-        # removes the first 5 elements every 500 elements
-        # prevents array getting too big
-        if len(self.path) == 500:
-            self.path = self.path[5:]
+        # # removes the first 5 elements every 500 elements
+        # # prevents array getting too big
+        # if len(self.path) == 500:
+        #     self.path = self.path[5:]
         
 
         # renders distance, velocity, thrust, and angle from original position
@@ -687,18 +754,28 @@ class RocketSprite(pygame.sprite.Sprite):
         thurst_text = FONT_20.render(f"{int(round(norm(self.thrust)))} N", 1, WHITE)
         win.blit(thurst_text, (20, distance_text.get_height()*2+20))
 
-        angle_text = FONT_20.render(f"{int(round(degrees(atan2(self.thrust[0], self.thrust[1]))))}°", 1, WHITE)
+        angle = 0 if self.angular_displacement == 0 else (360-self.angular_displacement)
+        angle_text = FONT_20.render(f"{int(round(angle))}°", 1, WHITE)
         win.blit(angle_text, (20, distance_text.get_height()*3+20))
+
+        timestep_text = FONT_20.render(f"Timestep: {timestep.get_timestep()} s/frame", 1, WHITE)
+        win.blit(timestep_text, (WIDTH-20-timestep_text.get_width(), 80))
+
+        state = 'ON' if self.booster_counter else 'OFF'
+        booster_text = FONT_20.render(f"Booster: {state}", 1, WHITE)
+        win.blit(booster_text, (WIDTH-20-booster_text.get_width(), 60))
 
     def update(self, planets):
         self.rocket_input()
         self.new_coordinates(planets)
 
 
+
 circle = pygame.Surface((2, 2), pygame.SRCALPHA)
 # pygame.draw.circle(circle, WHITE, (0, 0), 1)
 gfxdraw.aacircle(circle, 2, 2, 10, WHITE)
 gfxdraw.filled_circle(circle, 2, 2, 10, WHITE)
+
 class RandomSurface(pygame.sprite.Sprite):
     def __init__(self, coordinates, radius, colour, group):
         super().__init__(group)
@@ -781,7 +858,7 @@ class Camera(pygame.sprite.Group):
             self.internal_surface.blit(sprite.image, offset_pos)
 
         # scales sprites depending on the zoom
-        scaled_surface = pygame.transform.scale(self.internal_surface, self.internal_surface_size_vector * self.zoom_scale)
+        scaled_surface = pygame.transform.smoothscale(self.internal_surface, self.internal_surface_size_vector * self.zoom_scale)
         scaled_rect = scaled_surface.get_rect(center = (self.half_w, self.half_h))
         self.display_surface.blit(scaled_surface, scaled_rect)
 
