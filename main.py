@@ -80,7 +80,7 @@ back_button = Button('Back', font, 200, 40, (660, 820), 6)
 
 # control text
 control_surf = [font16.render(i, True, 'white') for i in control_list]
-control_rect = [control_surf[j].get_rect(topleft = (40, 140 + (1.6)*j)) for j in range(len(control_list))]
+control_rect = [control_surf[j].get_rect(topleft = (40, 140 + (16+5)*j)) for j in range(len(control_list))]
 
 # def main():
 while True:
