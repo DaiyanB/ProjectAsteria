@@ -4,7 +4,7 @@ UP arrow - increases thrust
 DOWN arrow - decreases thrust
 RIGHT arrow - turns rocket clockwise
 LEFT arrow - turns rocket anti-clockwise
-SPACE - breaks (decelerates)
+SPACE - brakes (decelerates)
 Z - makes velocity 0
 N - turns rocket into the marvel of engineering: the one and only nuclear rocket
 
