@@ -491,13 +491,13 @@ class RocketSprite(pygame.sprite.Sprite):
         # position vector
         current_pos = np.array(coordinates) * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
 
-        direction_vector = np.array([0,-1]) 
+        direction_vector = np.array([0, -1]) 
 
         self.coordinates = np.array(coordinates)
 
         self.velocity = np.array(velocity)
         self.thrust = np.array([0,0])
-        self.thrust_record = np.array(thrust*direction_vector)
+        self.thrust_record = thrust*direction_vector
         self.deceleration = 100
 
         self.angular_displacement = 0
@@ -568,11 +568,6 @@ class RocketSprite(pygame.sprite.Sprite):
         # adjusts the angular displacement from the direction vector
         self.angular_displacement = (theta_deg + self.angular_displacement) % 360
 
-        # if self.angular_displacement >= 360:
-        #     self.angular_displacement -= 360
-        # elif self.angular_displacement <= -360:
-        #     self.angular_displacement += 360
-
         # converts degrees to radians
         theta = radians(theta_deg)
         
@@ -589,27 +584,23 @@ class RocketSprite(pygame.sprite.Sprite):
         self.image = pygame.transform.rotate(self.rocket_type[0], self.angular_displacement)
 
     def change_thrust(self, thrust_constant):
+        # decreases the magnitude of the thrust by some factor equal to
+        # the thrust_constant
         magnitude = norm(self.thrust)
-        # normalised_factor = (magnitude+thrust_constant)/magnitude
-        # self.thrust = self.thrust*normalised_factor
 
         # new magnitude of thrust
         delta_thrust = magnitude+thrust_constant
 
+        # thrust validation
         if magnitude != 0:
             if delta_thrust <= 0:
-                print('dt_1',delta_thrust)
                 self.thrust_record = self.thrust
                 self.thrust = self.thrust*0
             else:
-                print('dt_2', delta_thrust)
                 normalised_factor = delta_thrust/magnitude
                 self.thrust = self.thrust*normalised_factor
 
-        elif magnitude == 0 and thrust_constant > 0:
-            # rotation_matrix = np.array([[cos(pi), -sin(pi)], 
-            #                             [sin(pi), cos(pi)]])
-            
+        elif magnitude == 0 and thrust_constant > 0:            
             normalised_factor = delta_thrust/norm(self.thrust_record)
             self.thrust = self.thrust_record*normalised_factor            
 
@@ -617,15 +608,21 @@ class RocketSprite(pygame.sprite.Sprite):
         # decreases the magnitude of the velocity by some factor equal to
         # the deceleration
         magnitude = norm(self.velocity)
+
+        # change in velocity
+        delta_vel = magnitude-self.deceleration
+        
+        # velocity validation
         if magnitude != 0:
-            breaking_factor = (magnitude-self.deceleration)/magnitude
-            self.velocity = self.velocity*breaking_factor
+            if delta_vel <= 0:
+                self.velocity = self.velocity*0
+            else:
+                breaking_factor = (delta_vel)/magnitude
+                self.velocity = self.velocity*breaking_factor
         else:
             self.velocity = self.velocity*0
 
     def booster(self, boost_counter):
-        # if args:
-        #     print(args)
         # turns booster on and off ie removes or adds back thrust
         if boost_counter:
             print(self.thrust, self.thrust_record)

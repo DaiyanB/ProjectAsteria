@@ -1,26 +1,23 @@
 import pygame 
-import numpy as np
 from sys import exit
-from math import radians
-from random import randint
 
 # from objects import Planet
 from objects import planets, Constant, Scale, RocketSprite, PlanetSprite, Camera, RandomSurface
 from objects import WIDTH, HEIGHT
 from button import Button
 from utils.utils import FPS, generator
-from utils.variables import control_list
+from utils.variables import rocket_list, misc_list
 # from testing import planets
 # from testing import WIDTH, HEIGHT
 
 pygame.init()
- 
 
 screen = pygame.display.set_mode((WIDTH, HEIGHT)) # window dimensions
 
 # colours
 WHITE = (255, 255, 255)
 GREEN = (47, 237, 40)
+MONA_PURPLE = (136, 0, 231)
 # WIN = pygame.display.set_mode((0, 0))
 
 # fps and scale classes
@@ -79,14 +76,15 @@ exit_button = Button('Exit', font, 200, 40, (350, 550), 6)
 back_button = Button('Back', font, 200, 40, (660, 820), 6)
 
 # control text
-control_surf = [font16.render(i, True, 'white') for i in control_list]
-control_rect = [control_surf[j].get_rect(topleft = (40, 140 + (16+5)*j)) for j in range(len(control_list))]
+rocket_surf = [font16.render(i, True, 'white') for i in rocket_list]
+rocket_rect = [rocket_surf[j].get_rect(topleft = (40, 160 + (16 + 5)*j)) for j in range(len(rocket_list))]
+rocket_end = len(rocket_rect)*(16+5) + 180
 
-# def main():
+# misc text
+misc_surf = [font16.render(k, True, 'white') for k in misc_list]
+misc_rect = [misc_surf[t].get_rect(topleft = (40, rocket_end + 20 + 40 + (16 + 5)*t)) for t in range(len(misc_list))]
+
 while True:
-    print(controls_button.action)
-    # fills window with black
-
     if game_state == 0:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -175,16 +173,29 @@ while True:
                 pygame.quit()
                 exit()
 
-        control_title_surf = font.render('Controls', True, 'white')
+        # creates text surfaces
+        control_title_surf = font40.render('Controls', True, 'white')
         control_title_rect = control_title_surf.get_rect(topleft = (40, 40))
-        # control_text_surf = font.render(control_text, True, 'white')
-        # control_text_rect = control_text_surf.get_rect(topleft = (30, 130))
 
+        rocket_title_surf = font.render('Rocket controls', True, '#8800e7')
+        rocket_title_rect = rocket_title_surf.get_rect(topleft = (40, 120))
+
+        misc_title_surf = font.render('Misc', True, '#8800e7')
+        misc_title_rect = misc_title_surf.get_rect(topleft = (40, rocket_end + 20))
+        
+        # draws text
         screen.blit(control_title_surf, control_title_rect)
+        screen.blit(rocket_title_surf, rocket_title_rect)
+        screen.blit(misc_title_surf, misc_title_rect)
 
-        for idx, surf in enumerate(control_surf):
-            rect = control_rect[idx]
+        for idx, surf in enumerate(rocket_surf):
+            rect = rocket_rect[idx]
             screen.blit(surf, rect)
+
+        for idx, surf in enumerate(misc_surf):
+            rect = misc_rect[idx]
+            screen.blit(surf, rect)
+
 
         back_button.draw(screen)
 

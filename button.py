@@ -3,6 +3,8 @@ import pygame
 class Button:
     def __init__(self, text, font, width, height, pos, elevation):
         # core attr
+        self.font = font
+        self.text = text
         self.pressed = False
         self.elevation = elevation
         self.elevation_record = elevation
@@ -20,7 +22,7 @@ class Button:
         self.text_surf = font.render(text, True, '#8800e7')
         self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)
 
-        # action var
+        # action attr
         self.action = False
 
     def draw(self, screen):
@@ -40,7 +42,9 @@ class Button:
     def check_click(self):
         mouse_pos = pygame.mouse.get_pos()
         if self.top_rect.collidepoint(mouse_pos):
-            # self.top_colour = '#D74B4B'
+            self.top_colour = '#c7c7c7'
+            self.bottom_colour = '#6302a8'
+            self.text_surf = self.font.render(self.text, True, '#6302a8')
             if pygame.mouse.get_pressed()[0]:
                 self.elevation = 0
                 self.pressed = True
@@ -53,4 +57,6 @@ class Button:
         else:
             self.elevation = self.elevation_record
             self.top_colour = '#FFFFFF'
+            self.bottom_colour = '#8800e7'
+            self.text_surf = self.font.render(self.text, True, '#8800e7')
         
