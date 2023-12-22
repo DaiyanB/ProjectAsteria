@@ -1,10 +1,8 @@
 import pygame
     
 class Button:
-    def __init__(self, text, font, width, height, pos, elevation):
+    def __init__(self, text, font, width, height, pos, elevation, images = None, scale = 1):
         # core attr
-        self.font = font
-        self.text = text
         self.pressed = False
         self.elevation = elevation
         self.elevation_record = elevation
@@ -19,7 +17,16 @@ class Button:
         self.bottom_colour = '#8800e7'
 
         # text
-        self.text_surf = font.render(text, True, '#8800e7')
+        if images != None:
+            self.text_surf_normal = pygame.image.load(images[0]).convert_alpha()
+            self.text_surf_normal = pygame.transform.rotozoom(self.text_surf_normal, 0, scale)
+            self.text_surf_hover = pygame.image.load(images[1]).convert_alpha()
+            self.text_surf_hover = pygame.transform.rotozoom(self.text_surf_hover, 0, scale)
+        else:
+            self.text_surf_normal = font.render(text, True, '#8800e7')
+            self.text_surf_hover = font.render(text, True, '#6302a8')
+
+        self.text_surf = self.text_surf_normal
         self.text_rect = self.text_surf.get_rect(center = self.top_rect.center)
 
         # action attr
@@ -41,10 +48,15 @@ class Button:
 
     def check_click(self):
         mouse_pos = pygame.mouse.get_pos()
+
+        # checks if button is being hovered over
         if self.top_rect.collidepoint(mouse_pos):
+            # changes colours accordingly
             self.top_colour = '#c7c7c7'
             self.bottom_colour = '#6302a8'
-            self.text_surf = self.font.render(self.text, True, '#6302a8')
+            self.text_surf = self.text_surf_hover
+
+            # checks if it has been pressed
             if pygame.mouse.get_pressed()[0]:
                 self.elevation = 0
                 self.pressed = True
@@ -58,5 +70,5 @@ class Button:
             self.elevation = self.elevation_record
             self.top_colour = '#FFFFFF'
             self.bottom_colour = '#8800e7'
-            self.text_surf = self.font.render(self.text, True, '#8800e7')
+            self.text_surf = self.text_surf_normal
         

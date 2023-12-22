@@ -74,6 +74,7 @@ play = Button('Play', font, 200, 40, (350, 350), 6)
 controls_button = Button('Controls', font, 200, 40, (350, 450), 6)
 exit_button = Button('Exit', font, 200, 40, (350, 550), 6)
 back_button = Button('Back', font, 200, 40, (660, 820), 6)
+home_button = Button('', font, 40, 40, (20, 840), 6, ['assets\home_normal.png', 'assets\home_hover.png'], 40/2400)
 
 # control text
 rocket_surf = [font16.render(i, True, 'white') for i in rocket_list]
@@ -105,6 +106,7 @@ while True:
         # executes the associated action
         if play.action == True:
             game_state = 1
+            play.action = False
             print(game_state)
 
         if controls_button.action == True:
@@ -117,12 +119,17 @@ while True:
             
     elif game_state == 1:
         screen.fill('black')
+
+        if home_button.action:
+            game_state = 0
+            home_button.action = False
+
         for event in pygame.event.get():
             # checks if window is closed
             # ends program if it is
             if event.type == pygame.QUIT:
                 pygame.quit()
-                exit()
+                exit()              
 
             # checks if keys are pressed that have actions associated with them
             # and then executes said actions
@@ -163,6 +170,9 @@ while True:
         # updates position of sprite planets and draws them
         camera_group.update(planets)
         camera_group.camera_draw(rocket, fps, scale)
+
+        home_button.draw(screen)
+    
     
     elif game_state == 2:
         screen.fill('#1a1a1a') 
@@ -182,7 +192,7 @@ while True:
 
         misc_title_surf = font.render('Misc', True, '#8800e7')
         misc_title_rect = misc_title_surf.get_rect(topleft = (40, rocket_end + 20))
-        
+
         # draws text
         screen.blit(control_title_surf, control_title_rect)
         screen.blit(rocket_title_surf, rocket_title_rect)
