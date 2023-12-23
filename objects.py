@@ -17,9 +17,7 @@ pygame.init()
 #
 WIDTH, HEIGHT = 900, 900
 
-#
 # colours
-#
 YELLOW = (255, 255, 0)
 DARK_GREY = (80, 78, 81)
 WHITE = (255, 255, 255)
@@ -30,14 +28,11 @@ BEIGE = (230, 208, 178)
 
 MONA_PURPLE = (136, 0, 231)
 
-#
 # timestep (duh)
-#
-ORIGINAL_TIMESTEP = 86400/2
-timestep = Timestep(ORIGINAL_TIMESTEP)
-#
+# ORIGINAL_TIMESTEP = 86400/2
+# timestep = Timestep(ORIGINAL_TIMESTEP)
+
 # fonts
-#
 FONT_16 = pygame.font.SysFont("Inter", 16)
 FONT_20 = pygame.font.SysFont("Inter", 20)
 
@@ -71,18 +66,19 @@ class Scale:
         win.blit(self.text, pos)
 
 class Planet:
-    def __init__(self, coordinates, ref_radius, colour, mass, name):
+    def __init__(self, coordinates, ref_radius, mass, name, timestep):
         # initialises planet properties
         self.coordinates = np.array(coordinates)
         self.ref_radius = ref_radius
-        self.colour = colour
         self.mass = mass 
 
         self.name = name.lower() # debugging purposes
 
         self.orbit = []
 
-        self.velocity = np.array([0,self.orbital_velocity(self.coordinates)])      
+        self.velocity = np.array([0,self.orbital_velocity(self.coordinates)]) 
+
+        self.timestep = timestep     
 
         self.sun = False
         self.sun_distance = 0
@@ -93,15 +89,11 @@ class Planet:
     
     @property
     def radius(self):
-        #
         # converts radius from AU to meters and then applies the appropriate scale
-        #
         return self.ref_radius*(Constant.SCALE*Constant.AU/100)
     
     def orbital_velocity(self, coordinates):
-        #
         # finds the velocity needed to keep the planet in orbit at that particular radius
-        #
         if coordinates[0] == 0:
             return 0
         
@@ -113,9 +105,7 @@ class Planet:
         current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2]) # position vector
 
         if len(self.orbit) > 2:
-            #
             # draws orbital trail
-            #
             updated_points = []
 
             for pt in self.orbit:
@@ -128,26 +118,20 @@ class Planet:
 
             pygame.draw.lines(win, self.colour, False, updated_points, 2)
 
-        pygame.draw.circle(win, self.colour, (current_pos[0], current_pos[1]), self.radius)
+        # pygame.draw.circle(win, self.colour, (current_pos[0], current_pos[1]), self.radius)
 
         if not self.sun:
-            #
             # renders "distance from" text
-            #
             distance_text = FONT_16.render(f"{round(self.sun_distance/1000, 2)} km", 1, WHITE)
             win.blit(distance_text, (current_pos[0] - distance_text.get_width()/2, current_pos[1] + distance_text.get_height()/2))
 
         
     
     def attraction(self, other):
-        #
         # coordinates of other object
-        #
         other_coordinates = other.coordinates
 
-        #
         # calculates straight line distance from the centres of each object
-        #
         displacement = other_coordinates - self.coordinates 
 
         distance = norm(displacement)
@@ -157,37 +141,25 @@ class Planet:
         if other.sun:
             self.sun_distance = distance
 
-        #
         # calculates force due to gravity from every other object
         # using F = GMm/r^2
-        #
         force = Constant.G * self.mass * other.mass / distance**2
 
-        #
         # finds angle between vertical and horizontal components
-        #
         theta = math.atan2(displacement[1], displacement[0]) 
         
-        #
         # calculates the vector representing the force
-        #
         force_vector = np.array([math.cos(theta), math.sin(theta)]) * force
 
-        #
         # returns vector
-        #
         return force_vector
     
     def update_position(self, planets):
-        #
         # sets resultant force to 0
-        #
         resultant_force = np.array([0,0])
 
         for planet in planets:
-            #
             # adds all up all the forces
-            #
             if self == planet:
                 continue
         
@@ -195,23 +167,17 @@ class Planet:
 
             resultant_force = resultant_force + force
 
-        #
         # updates velocity using v = u + at
-        #
-        self.velocity = self.velocity + (resultant_force / self.mass * timestep.get_timestep())
+        self.velocity = self.velocity + (resultant_force / self.mass * self.timestep.get_timestep())
 
-        #
         # updates coordinates accordingly
-        #
-        self.coordinates = self.coordinates + (self.velocity * timestep.get_timestep())
+        self.coordinates = self.coordinates + (self.velocity * self.timestep.get_timestep())
 
-        #
         # appends coordinates so that orbital path can be created
-        #
         self.orbit.append((self.coordinates))
 
 class PlanetSprite(pygame.sprite.Sprite):
-    def __init__(self, coordinates, ref_radius, mass, name, path, group):
+    def __init__(self, coordinates, ref_radius, mass, name, timestep, path, group):
         super().__init__(group)
 
         # position vector
@@ -221,7 +187,7 @@ class PlanetSprite(pygame.sprite.Sprite):
         self.image = pygame.transform.rotozoom(self.image, 0, ref_radius*2/1024)
         self.rect = self.image.get_rect(center = (current_pos[0], current_pos[1]))
 
-        self.average_colour = get_average_color(self.image)
+        # self.average_colour = get_average_color(self.image)
 
         self.coordinates = np.array(coordinates)
         self.ref_radius = ref_radius
@@ -231,7 +197,9 @@ class PlanetSprite(pygame.sprite.Sprite):
 
         self.orbit = []
 
-        self.velocity = np.array([0,self.orbital_velocity(self.coordinates)])      
+        self.velocity = np.array([0,self.orbital_velocity(self.coordinates)])    
+
+        self.timestep = timestep  
 
         self.sun = False
         self.sun_distance = 0
@@ -242,15 +210,11 @@ class PlanetSprite(pygame.sprite.Sprite):
     
     @property
     def radius(self):
-        #
         # converts radius from AU to meters and then applies the appropriate scale
-        #
         return self.ref_radius*(Constant.SCALE*Constant.AU/100)
     
     def orbital_velocity(self, coordinates):
-        #
         # finds the velocity needed to keep the planet in orbit at that particular radius
-        #
         if coordinates[0] == 0:
             return 0
         
@@ -325,10 +289,10 @@ class PlanetSprite(pygame.sprite.Sprite):
             resultant_force = resultant_force + force
 
         # updates velocity using v = u + at
-        self.velocity = self.velocity + (resultant_force / self.mass * timestep.get_timestep())
+        self.velocity = self.velocity + (resultant_force / self.mass * self.timestep.get_timestep())
 
         # updates coordinates accordingly
-        self.coordinates = self.coordinates + (self.velocity * timestep.get_timestep())
+        self.coordinates = self.coordinates + (self.velocity * self.timestep.get_timestep())
 
         current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
 
@@ -476,16 +440,16 @@ class Rocket():
         resultant_force = resultant_force + self.thrust
 
         # updates velocity using v = u + at
-        self.velocity = self.velocity + (resultant_force / self.mass * timestep.get_timestep())
+        self.velocity = self.velocity + (resultant_force / self.mass * self.timestep.get_timestep())
         
         # updates coordinates accordingly
-        self.coordinates = self.coordinates + (self.velocity * timestep.get_timestep())
+        self.coordinates = self.coordinates + (self.velocity * self.timestep.get_timestep())
         # if self.name == "earth":
         #     print(self.sun_distance)
         self.path.append((self.coordinates))
 
 class RocketSprite(pygame.sprite.Sprite):
-    def __init__(self, coordinates, velocity, thrust, mass, colour, group):
+    def __init__(self, coordinates, velocity, thrust, mass, timestep, colour, group):
         super().__init__(group)
 
         # position vector
@@ -525,6 +489,8 @@ class RocketSprite(pygame.sprite.Sprite):
 
         self.name = 'rocket'
 
+        self.timestep = timestep
+        
         # self.planets = planets
 
     @property
@@ -657,12 +623,12 @@ class RocketSprite(pygame.sprite.Sprite):
             self.velocity = self.velocity*0
 
         if keys[pygame.K_EQUALS]:
-            new_timestep =  timestep.get_timestep() + ORIGINAL_TIMESTEP*0.05
-            timestep.update_timestep(new_timestep)
+            new_timestep =  self.timestep.get_timestep() + self.timestep.get_original_timestep()*0.05
+            self.timestep.update_timestep(new_timestep)
         
         if keys[pygame.K_MINUS]:
-            new_timestep = timestep.get_timestep() - ORIGINAL_TIMESTEP*0.05
-            timestep.update_timestep(new_timestep)
+            new_timestep = self.timestep.get_timestep() - self.timestep.get_original_timestep()*0.05
+            self.timestep.update_timestep(new_timestep)
 
         # for event in pygame.event.get():
         #     if event.type == pygame.KEYDOWN:
@@ -706,10 +672,10 @@ class RocketSprite(pygame.sprite.Sprite):
         # print(resultant_force)
 
         # updates velocity using v = u + at
-        self.velocity = self.velocity + (resultant_force / self.mass * timestep.get_timestep())
+        self.velocity = self.velocity + (resultant_force / self.mass * self.timestep.get_timestep())
         
         # updates coordinates accordingly
-        self.coordinates = self.coordinates + (self.velocity * timestep.get_timestep())
+        self.coordinates = self.coordinates + (self.velocity * self.timestep.get_timestep())
         # print(self.coordinates)
         current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
         # print(current_pos)
@@ -755,7 +721,7 @@ class RocketSprite(pygame.sprite.Sprite):
         angle_text = FONT_20.render(f"{int(round(angle))}°", 1, WHITE)
         win.blit(angle_text, (20, distance_text.get_height()*3+20))
 
-        timestep_text = FONT_20.render(f"Timestep: {timestep.get_timestep()} s/frame", 1, WHITE)
+        timestep_text = FONT_20.render(f"Timestep: {self.timestep.get_timestep()} s/frame", 1, WHITE)
         win.blit(timestep_text, (WIDTH-20-timestep_text.get_width(), 80))
 
         state = 'ON' if self.booster_counter else 'OFF'
@@ -872,17 +838,17 @@ class Camera(pygame.sprite.Group):
 # camera_group = pygame.sprite.Group()
 # camera_group.add(Camera)
 
-sun = Planet([0, 0], 24, YELLOW, 1.988892e30, 'sun')
-sun.sun = True
+# sun = Planet([0, 0], 24, YELLOW, 1.988892e30, 'sun')
+# sun.sun = True
 
-mercury = Planet([0.387*Constant.AU, 0], 8, DARK_GREY, 3.30e23, 'mercury')
+# mercury = Planet([0.387*Constant.AU, 0], 8, DARK_GREY, 3.30e23, 'mercury')
 
-venus = Planet([0.723*Constant.AU, 0], 14, BEIGE, 4.8685e24, 'venus')
+# venus = Planet([0.723*Constant.AU, 0], 14, BEIGE, 4.8685e24, 'venus')
 
-earth = Planet([-Constant.AU, 0], 16, BLUE, 5.9742e24, 'earth')
+# earth = Planet([-Constant.AU, 0], 16, BLUE, 5.9742e24, 'earth')
 
-mars = Planet([-1.524*Constant.AU, 0], 12, RED, 6.39e23, 'mars')
+# mars = Planet([-1.524*Constant.AU, 0], 12, RED, 6.39e23, 'mars')
 
-rocket = Rocket([-2*Constant.AU+2, earth.radius*Constant.SCALE*2], [0,11208.25589], [0, 0], 1e3, WHITE)
-planets = [sun, mercury, venus, earth, mars]
+# rocket = Rocket([-2*Constant.AU+2, earth.radius*Constant.SCALE*2], [0,11208.25589], [0, 0], 1e3, WHITE)
+# planets = [sun, mercury, venus, earth, mars]
 

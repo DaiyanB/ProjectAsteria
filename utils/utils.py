@@ -19,6 +19,9 @@ class Timestep:
     def get_timestep(self):
         return self.timestep
     
+    def get_original_timestep(self):
+        return self.original_timestep
+    
     def update_timestep(self, new_timestep):
         if new_timestep > (max_timestep := 4*self.original_timestep):
             self.timestep = max_timestep
@@ -26,6 +29,9 @@ class Timestep:
             self.timestep = min_timestep
         else:
             self.timestep = new_timestep
+    
+    def reset(self):
+        self.timestep = self.original_timestep
 
 def draw_text(text, font, text_col, coords, screen):
     text = font.render(text, True, text_col)
