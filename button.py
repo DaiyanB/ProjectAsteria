@@ -71,4 +71,8 @@ class Button:
             self.top_colour = '#FFFFFF'
             self.bottom_colour = '#8800e7'
             self.text_surf = self.text_surf_normal
+
+            if not pygame.mouse.get_pressed()[0]:
+                self.pressed = False
+                # ?
         

@@ -129,6 +129,7 @@ while True:
             controls_button.action = False
 
         if exit_button.action == True:
+            print('exit')
             pygame.quit()
             exit()
             
