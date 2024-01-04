@@ -262,7 +262,7 @@ earth = Planet([-Constant.AU, 0], 16, BLUE, 5.9742e24)
 mars = Planet([-1.524*Constant.AU, 0], 12, RED, 6.39e23)
 
 # pl = Planet([3*Constant.AU, 0], 23, MONA_PURPLE, 2.71828e29)
-rocket = Rocket([-Constant.AU+2, earth.radius*Constant.SCALE*2], [0,11208.25589], [0, 20], 1e3, WHITE)
+rocket = Rocket([-Constant.AU+2, earth.radius*Constant.SCALE*2], [0,11208.25589], [0, 0.1], 1e3, WHITE)
 # rocket2 = Rocket([Constant.AU*2, earth.radius*Constant.SCALE*2], [0,11208.25589], 1e29, WHITE)
 
 planets = [sun, mercury, venus, earth, mars, rocket]
