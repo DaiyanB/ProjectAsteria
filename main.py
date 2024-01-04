@@ -5,13 +5,14 @@ from objects import Button, Camera, Constant, Planet, PlanetSprite, RocketSprite
 from button import Button
 from utils import FPS, Timestep, generator, rocket_list, misc_list
 
-
 # window dimensions
 WIDTH, HEIGHT = 900, 900
 
+# initialising pygame
 pygame.init()
 
-screen = pygame.display.set_mode((WIDTH, HEIGHT)) # window dimensions
+# creating screen surface
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 # colours
 WHITE = (255, 255, 255)
@@ -109,6 +110,8 @@ rocket_title_rect = rocket_title_surf.get_rect(topleft = (40, 120))
 misc_title_surf = font.render('Misc', True, '#8800e7')
 misc_title_rect = misc_title_surf.get_rect(topleft = (40, rocket_end + 20))
 
+
+# main loop
 while True:
     if game_state == 0:
         for event in pygame.event.get():
@@ -198,7 +201,9 @@ while True:
             game_state = 0
             home_button.action = False
 
-            # camera
+            # reinitialises everything
+
+            # empties camera group
             camera_group.empty()
 
             # planets
@@ -218,14 +223,16 @@ while True:
 
             planets = [sun, mercury, venus, earth, mars]
 
-            # rocket
+            # empties rocket group
             rocket_group.empty()
+
+            # reinitialises rocket
             rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], 100, 1e5, timestep, WHITE, camera_group)
             rocket_group.add(rocket)
             boost_counter = generator()
             nuclear_counter = generator()    
 
-            # timestep
+            # resets timestep
             timestep.reset()
     
     elif game_state == 2:
@@ -237,11 +244,12 @@ while True:
                 pygame.quit()
                 exit()
 
-        # draws text
+        # draws titles
         screen.blit(control_title_surf, control_title_rect)
         screen.blit(rocket_title_surf, rocket_title_rect)
         screen.blit(misc_title_surf, misc_title_rect)
 
+        # draws the actual text
         for idx, surf in enumerate(rocket_surf):
             rect = rocket_rect[idx]
             screen.blit(surf, rect)
@@ -250,7 +258,7 @@ while True:
             rect = misc_rect[idx]
             screen.blit(surf, rect)
 
-
+        # draws back button
         back_button.draw(screen)
 
         if back_button.action == True:
@@ -260,6 +268,7 @@ while True:
 
         # screen.blit(control_text_surf, control_text_rect)
         
+    # updates display    
     pygame.display.update()
     
     # sets max framerate at 60 FPS
