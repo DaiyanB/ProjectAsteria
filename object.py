@@ -3,18 +3,14 @@ from numpy.linalg import norm
 
 import pygame, math
 from pygame import gfxdraw
-from math import sin, cos, atan2, degrees, radians, pi
-from random import randint
-
-from utils.utils import Timestep, get_average_color
+from math import sin, cos, atan2, degrees, radians
 
 # from pygame.sprite import _Group
 
 pygame.font.init()
 pygame.init()
-#
+
 # window dimensions
-#
 WIDTH, HEIGHT = 900, 900
 
 # colours

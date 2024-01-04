@@ -1,14 +1,13 @@
 import pygame 
 from sys import exit
 
-# from objects import Planet
-from objects import Constant, Scale, RocketSprite, PlanetSprite, Planet, Camera, RandomSurface
-from objects import WIDTH, HEIGHT
+from objects import Button, Camera, Constant, Planet, PlanetSprite, RocketSprite, Scale
 from button import Button
-from utils.utils import FPS, Timestep, generator
-from utils.variables import rocket_list, misc_list
-# from testing import planets
-# from testing import WIDTH, HEIGHT
+from utils import FPS, Timestep, generator, rocket_list, misc_list
+
+
+# window dimensions
+WIDTH, HEIGHT = 900, 900
 
 pygame.init()
 
@@ -99,6 +98,16 @@ rocket_end = len(rocket_rect)*(16+5) + 180
 # misc text
 misc_surf = [font16.render(k, True, 'white') for k in misc_list]
 misc_rect = [misc_surf[t].get_rect(topleft = (40, rocket_end + 20 + 40 + (16 + 5)*t)) for t in range(len(misc_list))]
+
+# creates text surfaces for the controls
+control_title_surf = font40.render('Controls', True, 'white')
+control_title_rect = control_title_surf.get_rect(topleft = (40, 40))
+
+rocket_title_surf = font.render('Rocket controls', True, '#8800e7')
+rocket_title_rect = rocket_title_surf.get_rect(topleft = (40, 120))
+
+misc_title_surf = font.render('Misc', True, '#8800e7')
+misc_title_rect = misc_title_surf.get_rect(topleft = (40, rocket_end + 20))
 
 while True:
     if game_state == 0:
@@ -227,16 +236,6 @@ while True:
             if event.type == pygame.QUIT:
                 pygame.quit()
                 exit()
-
-        # creates text surfaces
-        control_title_surf = font40.render('Controls', True, 'white')
-        control_title_rect = control_title_surf.get_rect(topleft = (40, 40))
-
-        rocket_title_surf = font.render('Rocket controls', True, '#8800e7')
-        rocket_title_rect = rocket_title_surf.get_rect(topleft = (40, 120))
-
-        misc_title_surf = font.render('Misc', True, '#8800e7')
-        misc_title_rect = misc_title_surf.get_rect(topleft = (40, rocket_end + 20))
 
         # draws text
         screen.blit(control_title_surf, control_title_rect)
