@@ -33,9 +33,12 @@ FONT_16 = pygame.font.SysFont("Inter", 16)
 FONT_20 = pygame.font.SysFont("Inter", 20)
 
 class Camera(pygame.sprite.Group):
-    def __init__(self):
+    def __init__(self, Constant):
         super().__init__()
-
+        # initialises constants class
+        self.Constant = Constant
+        
+        # gets display surface
         self.display_surface = pygame.display.get_surface()
     
         # camera offset
@@ -70,7 +73,7 @@ class Camera(pygame.sprite.Group):
         if target.rect.bottom > self.camera_rect.bottom:
             self.camera_rect.bottom = target.rect.bottom
 
-        # adds the
+        # adds the offset
         self.offset.x = self.camera_rect.left - self.camera_borders["left"]
         self.offset.y = self.camera_rect.top - self.camera_borders["top"]
 
@@ -99,6 +102,8 @@ class Camera(pygame.sprite.Group):
 
         # renders the fps and scale texts
         fps.render(self.display_surface, WIDTH)
+
+        # self.Constant.update_scale(self.zoom_scale)
         scale.render(self.display_surface, WIDTH, self.zoom_scale)
 
         # renders the rocket info text

@@ -4,6 +4,7 @@ from numpy.linalg import norm
 import pygame, math
 
 from .constant import Constant
+from utils.utils import get_average_color, rgb_to_hex
 
 # from pygame.sprite import _Group
 
@@ -39,7 +40,7 @@ class PlanetSprite(pygame.sprite.Sprite):
         self.image = pygame.transform.rotozoom(self.image, 0, ref_radius*2/1024)
         self.rect = self.image.get_rect(center = (current_pos[0], current_pos[1]))
 
-        # self.average_colour = get_average_color(self.image)
+        self.colour = rgb_to_hex(get_average_color(self.image))
 
         self.coordinates = np.array(coordinates)
         self.ref_radius = ref_radius
@@ -47,7 +48,7 @@ class PlanetSprite(pygame.sprite.Sprite):
         
         self.name = name.lower()
 
-        self.orbit = []
+        self.trail = []
 
         self.velocity = np.array([0,self.orbital_velocity(self.coordinates)])    
 

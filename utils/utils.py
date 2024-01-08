@@ -37,11 +37,22 @@ import pygame
 #     text = font.render(text, True, text_col)
 #     screen.blit(text, coords)
 
-# def get_average_color(surf):
-#     color = pygame.transform.average_color(surf, surf.get_rect())
-#     pxiel_count = pygame.mask.from_surface(surf).count()
-#     scale = surf.get_width() * surf.get_height() / pxiel_count
-#     return (round(color[0]*scale), round(color[1]*scale), round(color[2]*scale))
+def get_average_color(surf):
+    color = pygame.transform.average_color(surf, surf.get_rect())
+    pxiel_count = pygame.mask.from_surface(surf).count()
+    scale = surf.get_width() * surf.get_height() / pxiel_count
+    return (round(color[0]*scale), round(color[1]*scale), round(color[2]*scale))
+
+def rgb_to_hex(rgb):
+    r, g, b = rgb
+    colour = '#'
+    for i in rgb:
+        if i == 0:
+            colour += '00'
+        else:
+            colour += str(hex(i)[2:])
+    print(colour)
+    return colour
 
 # def magnitude(arr):
 #     sq_sum = 0

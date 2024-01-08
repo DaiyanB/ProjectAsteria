@@ -4,7 +4,8 @@ from numpy.linalg import norm
 import pygame, math
 from math import sin, cos, atan2, degrees, radians
 
-from .constant import Constant
+if __name__ == "__main__":
+    from .constant import Constant
 
 # from pygame.sprite import _Group
 
@@ -34,11 +35,11 @@ FONT_16 = pygame.font.SysFont("Inter", 16)
 FONT_20 = pygame.font.SysFont("Inter", 20)
 
 class RocketSprite(pygame.sprite.Sprite):
-    def __init__(self, coordinates, velocity, thrust, mass, timestep, colour, group):
+    def __init__(self, coordinates, velocity, thrust, mass, timestep, colours, Constant, group):
         super().__init__(group)
 
         # position vector
-        current_pos = np.array(coordinates) * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
+        current_pos = np.array(coordinates) * Constant.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
 
         direction_vector = np.array([0, -1]) 
 
@@ -53,7 +54,8 @@ class RocketSprite(pygame.sprite.Sprite):
 
         self.mass = mass
 
-        self.colour = colour
+        self.colours = colours
+        self.colour = colours[0]
 
         # normal and nuclear version of rocket
         normal = pygame.image.load(r'sprites\sprites\rocket_sprite.png').convert_alpha()
@@ -67,7 +69,7 @@ class RocketSprite(pygame.sprite.Sprite):
         self.image = normal
         self.rect = self.image.get_rect(center = (current_pos[0], current_pos[1]))
         # self.ref_radius = 2*Constant.SCALE/100*Constant.AU
-        self.path = []
+        self.trail = []
 
         self.sun_distance = 0
         self.sun = False
@@ -75,12 +77,14 @@ class RocketSprite(pygame.sprite.Sprite):
         self.name = 'rocket'
 
         self.timestep = timestep
-        
+
+        self.Constant = Constant
+        print('HHHHHHHHHHHHHHHHHHHHHHHHHHH',self.Constant)
         # self.planets = planets
 
     @property
     def SCALE(self):
-        return Constant.SCALE
+        return self.Constant.SCALE
 
     def attraction(self, other):
         # coordinates of other object
@@ -99,7 +103,7 @@ class RocketSprite(pygame.sprite.Sprite):
         
         # calculates force due to gravity from every other object
         # using F = GMm/r^2
-        force = Constant.G * self.mass * other.mass / distance**2
+        force = self.Constant.G * self.mass * other.mass / distance**2
         # if other.sun: print('force', force)
 
         # if self.name == "earth":
@@ -266,12 +270,20 @@ class RocketSprite(pygame.sprite.Sprite):
         # print(current_pos)
         self.rect.center = current_pos
         
-        self.path.append((self.coordinates))   
+        self.trail.append((self.coordinates))   
+
+    def scaler(self, coords):
+        x, y = coords[0], coords[1]
+
+        x = x * self.SCALE + WIDTH / 2
+        y = y * self.SCALE + WIDTH / 2
+
+        return (x, y)
 
     def render(self, win):
-        # gets current position from (0,0), i think
-        # current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
-        # if len(self.path) > 2:
+        # # gets current position from (0,0), i think
+        # # current_pos = self.coordinates * self.SCALE + np.array([WIDTH / 2, HEIGHT / 2])
+        # if len(self.trail) > 2:
         #     # draws orbital trail
         #     updated_points = []
 
@@ -288,8 +300,8 @@ class RocketSprite(pygame.sprite.Sprite):
 
         # # removes the first 5 elements every 500 elements
         # # prevents array getting too big
-        # if len(self.path) == 500:
-        #     self.path = self.path[5:]
+        # if len(self.trail) == 500:
+        #     self.trail = self.trail[5:]
         
 
         # renders distance, velocity, thrust, and angle from original position

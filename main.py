@@ -1,8 +1,7 @@
 import pygame 
 from sys import exit
 
-from objects import Button, Camera, Constant, Planet, PlanetSprite, RocketSprite, Scale
-from button import Button
+from objects import Button, Camera, Constant, OrbitalTrail, Planet, PlanetSprite, RocketSprite, Scale
 from utils import FPS, Timestep, generator, rocket_list, misc_list
 
 # window dimensions
@@ -21,8 +20,9 @@ MONA_PURPLE = (136, 0, 231)
 # WIN = pygame.display.set_mode((0, 0))
 
 # fps and scale classes
+constant = Constant()
 fps = FPS()
-scale = Scale()
+scale = Scale(constant)
 
 # timestep (duh)
 ORIGINAL_TIMESTEP = 86400/2
@@ -33,7 +33,7 @@ pygame.display.set_icon(pygame.image.load('./ui/appicon.ico'))
 pygame.display.set_caption("Mona")
 
 # camera
-camera_group = Camera()
+camera_group = Camera(constant)
 
 # stars
 # for _ in range (2000):
@@ -44,30 +44,59 @@ camera_group = Camera()
 #     RandomSurface((x, y), radius, WHITE, camera_group)
 
 # planets
+# planet_group = pygame.sprite.Group()
+# planet_group.add(PlanetSprite([0, 0], 24, 1.988892e30, 'sun', timestep, 'sprites\sprites\sun_sprite.png', camera_group))
+# planet_group.add(PlanetSprite([0.387*Constant.AU, 0], 8, 3.30e23, 'mercury', timestep, 'sprites\sprites\mercury_sprite.png', camera_group))
+# planet_group.add(PlanetSprite([0.723*Constant.AU, 0], 14, 4.8685e24, 'venus', timestep, r'sprites\sprites\venus_sprite.png', camera_group))
+# planet_group.add(PlanetSprite([-Constant.AU, 0], 16, 5.9742e24, 'earth', timestep, 'sprites\sprites\earth_sprite.png', camera_group))
+# planet_group.add(PlanetSprite([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', timestep, 'sprites\sprites\marsR_sprite.png', camera_group))
+
+# sun = Planet([0, 0], 24, 1.988892e30, 'sun', timestep)
+# sun.sun = True
+
+# mercury = Planet([0.387*Constant.AU, 0], 8, 3.30e23, 'mercury', timestep)
+# venus = Planet([0.723*Constant.AU, 0], 14, 4.8685e24, 'venus', timestep)
+# earth = Planet([-Constant.AU, 0], 16, 5.9742e24, 'earth', timestep)
+# mars = Planet([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', timestep)
+
 planet_group = pygame.sprite.Group()
-planet_group.add(PlanetSprite([0, 0], 24, 1.988892e30, 'sun', timestep, 'sprites\sprites\sun_sprite.png', camera_group))
-planet_group.add(PlanetSprite([0.387*Constant.AU, 0], 8, 3.30e23, 'mercury', timestep, 'sprites\sprites\mercury_sprite.png', camera_group))
-planet_group.add(PlanetSprite([0.723*Constant.AU, 0], 14, 4.8685e24, 'venus', timestep, r'sprites\sprites\venus_sprite.png', camera_group))
-planet_group.add(PlanetSprite([-Constant.AU, 0], 16, 5.9742e24, 'earth', timestep, 'sprites\sprites\earth_sprite.png', camera_group))
-planet_group.add(PlanetSprite([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', timestep, 'sprites\sprites\marsR_sprite.png', camera_group))
 
-sun = Planet([0, 0], 24, 1.988892e30, 'sun', timestep)
-sun.sun = True
+# sun = Planet([0, 0], 24, 1.988892e30, 'sun', timestep)
+# sun.sun = True
 
-mercury = Planet([0.387*Constant.AU, 0], 8, 3.30e23, 'mercury', timestep)
-venus = Planet([0.723*Constant.AU, 0], 14, 4.8685e24, 'venus', timestep)
-earth = Planet([-Constant.AU, 0], 16, 5.9742e24, 'earth', timestep)
-mars = Planet([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', timestep)
+# mercury = Planet([0.387*Constant.AU, 0], 8, 3.30e23, 'mercury', timestep)
+# venus = Planet([0.723*Constant.AU, 0], 14, 4.8685e24, 'venus', timestep)
+# earth = Planet([-Constant.AU, 0], 16, 5.9742e24, 'earth', timestep)
+# mars = Planet([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', timestep)
+
+sun = PlanetSprite([0, 0], 24, 1.988892e30, 'sun', timestep, 'sprites\sprites\sun_sprite.png', camera_group)
+mercury = PlanetSprite([0.387*Constant.AU, 0], 8, 3.30e23, 'mercury', timestep, 'sprites\sprites\mercury_sprite.png', camera_group)
+venus = PlanetSprite([0.723*Constant.AU, 0], 14, 4.8685e24, 'venus', timestep, r'sprites\sprites\venus_sprite.png', camera_group)
+earth = PlanetSprite([-Constant.AU, 0], 16, 5.9742e24, 'earth', timestep, 'sprites\sprites\earth_sprite.png', camera_group)
+mars = PlanetSprite([-1.524*Constant.AU, 0], 12, 6.39e23, 'mars', timestep, 'sprites\sprites\marsR_sprite.png', camera_group)
+
+planet_group = pygame.sprite.Group()
 
 planets = [sun, mercury, venus, earth, mars]
+
+for i in planets:
+    planet_group.add(i)
 
 
 # rocket
 rocket_group = pygame.sprite.GroupSingle()
-rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], 100, 1e5, timestep, WHITE, camera_group)
+rocket = RocketSprite([Constant.AU*2,0], [0,11208.25589], 1e2, 1e5, timestep, WHITE, constant, camera_group)
 rocket_group.add(rocket)
 boost_counter = generator()
 nuclear_counter = generator()
+
+planets.append(rocket)
+
+# # orbital trail
+# orbital_trail_group = pygame.sprite.Group()
+
+# for planet in planets:
+#     orbital_trail_group.add(OrbitalTrail(planet, constant.record_scale, camera_group))
 
 screen = pygame.display.set_mode((HEIGHT, WIDTH))
 
@@ -173,7 +202,9 @@ while True:
 
                 # switches between the regular and nuclear rocket
                 if event.key == pygame.K_n:
-                    rocket.image = rocket.rocket_type[next(nuclear_counter)]
+                    index = next(nuclear_counter)
+                    rocket.image = rocket.rocket_type[index]
+                    rocket.colour = rocket.colours[index]
                 
             # checks if the mousewheel has been used
             if event.type == pygame.MOUSEWHEEL:
@@ -186,10 +217,12 @@ while True:
                     camera_group.zoom_scale = 0.05
                 elif camera_group.zoom_scale > 3:
                     camera_group.zoom_scale = 3
+
+                constant.update_scale(camera_group.zoom_scale)
         
         # updates position of planets
-        for planet in planets:            
-            planet.update_position(planets)
+        # for planet in planets:            
+        #     planet.update_position(planets)
 
         # updates position of sprite planets and draws them
         camera_group.update(planets)
